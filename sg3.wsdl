@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap-enc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" name="Executiva" targetNamespace="https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index">
+    <types>
+        <xsd:schema targetNamespace="https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index">
+            <xsd:complexType name="Liberacao">
+                <xsd:all>
+                    <xsd:element name="id_alocacao" type="xsd:string" />
+                    <xsd:element name="id_estabelecimento" type="xsd:string" />
+                    <xsd:element name="id_empresa_terceira" type="xsd:string" />
+                    <xsd:element name="id_colaborador" type="xsd:string" />
+                    <xsd:element name="estabelecimento" type="xsd:string" />
+                    <xsd:element name="empresa_terceira" type="xsd:string" />
+                    <xsd:element name="colaborador" type="xsd:string" />
+                    <xsd:element name="rg" type="xsd:string" />
+                    <xsd:element name="cpf" type="xsd:string" />
+                    <xsd:element name="pis" type="xsd:string" />
+                    <xsd:element name="tipo_terceiro" type="xsd:string" />
+                    <xsd:element name="funcao" type="xsd:string" />
+                    <xsd:element name="data_inicio" type="xsd:string" />
+                    <xsd:element name="data_fim" type="xsd:string" />
+                    <xsd:element name="data_integracao" type="xsd:string" />
+                    <xsd:element name="data_vencimento_integracao" type="xsd:string" />
+                    <xsd:element name="data_demissao" type="xsd:string" />
+                    <xsd:element name="liberado" type="xsd:string" />
+                    <xsd:element name="cracha" type="xsd:string" />
+                    <xsd:element name="status_alocacao" type="xsd:string" />
+                </xsd:all>
+            </xsd:complexType>
+            <xsd:complexType name="ArrayOfLiberacao">
+                <xsd:sequence>
+                    <xsd:element name="item" type="tns:Liberacao" minOccurs="0" maxOccurs="unbounded" />
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+    </types>
+    <portType name="ExecutivaPort">
+        <operation name="getLiberacao">
+            <documentation>Webservice Liberacao</documentation>
+            <input message="tns:getLiberacaoIn" />
+            <output message="tns:getLiberacaoOut" />
+        </operation>
+    </portType>
+    <binding name="ExecutivaBinding" type="tns:ExecutivaPort">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http" />
+        <operation name="getLiberacao">
+            <soap:operation soapAction="https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index#getLiberacao" />
+            <input>
+                <soap:body use="literal" namespace="https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index" />
+            </input>
+            <output>
+                <soap:body use="literal" namespace="https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index" />
+            </output>
+        </operation>
+    </binding>
+    <service name="ExecutivaService">
+        <port name="ExecutivaPort" binding="tns:ExecutivaBinding">
+            <soap:address location="https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index" />
+        </port>
+    </service>
+    <message name="getLiberacaoIn">
+        <part name="liberacao" type="tns:Liberacao" />
+        <part name="tipo_registro" type="xsd:int" />
+    </message>
+    <message name="getLiberacaoOut">
+        <part name="return" type="tns:ArrayOfLiberacao" />
+    </message>
+</definitions>
