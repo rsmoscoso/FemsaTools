@@ -1634,43 +1634,35 @@ namespace FemsaTools
                 var client = new ExecutivaPortClient();
                 //e chame este método assíncrono com usuario, senha e o numero 3
                 var response = await client.getLiberacaoWithCredentials(@"webservice.femsabrasil", @"Executiva@femsab@3496", 3);
-                //var x = response.FindAll(delegate (Liberacao l) { return !String.IsNullOrEmpty(l.cracha); });
-
-                foreach (Liberacao l in response)
-                {
-                    writer.WriteLine(String.Format("{0};{1};{2}:{3}", l.id_colaborador, l.cpf, l.rg, l.colaborador));
-                }
-                writer.Close();
+                var x = response.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S"); });
 
                 string sql = null;
                 string firstname = "";
                 string lastname = "";
-                writer.WriteLine("RG SG3;CPF SG3;Nome SG3;LIBERADO;PERSID;PERSNO;NOME;ID");
+                writer.WriteLine("RG SG3;CPF SG3;Nome SG3;LIBERADO;PERSID;PERSNO;NOME;PERSCLASSID;ID");
                 int i = 0;
-                foreach (Liberacao l in response)
+                foreach (Liberacao l in x)
                 {
                     ++i;
 
                     BSCommon.ParseName(l.colaborador.Replace("'", ""), out firstname, out lastname);
 
-                    this.LogTask.Information(String.Format("{0} de {1}. RG: {2}, CPF: {3}, Nome: {4}", (i++).ToString(), response.Count.ToString(), l.rg, l.cpf, l.colaborador.Replace("'", "")));
+                    this.LogTask.Information(String.Format("{0} de {1}. RG: {2}, CPF: {3}, Nome: {4}", (i++).ToString(), x.Count.ToString(), l.rg, l.cpf, l.colaborador.Replace("'", "")));
 
-                    sql = String.Format("select persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, '') from bsuser.persons where status = 1 and persclass = 'E' and ((persno = '{0}' or persno = '{1}') or (firstname like '%{2}%' and lastname like '%{3}%'))",
+                    sql = String.Format("select persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), persclassid from bsuser.persons where status = 1 and persclass = 'E' and ((persno = '{0}' or persno = '{1}') or (firstname = '{2}' and lastname = '{3}'))",
                         l.rg.Replace("'", ""), l.cpf.Replace("'", ""), firstname, lastname);
                     using (DataTable table = this.bisACEConnection.loadDataTable(sql))
                     {
                         if (table.Rows.Count > 0)
                         {
                             this.LogTask.Information(String.Format("{0} registros encontrados.", table.Rows.Count.ToString()));
-                            this.LogTask.Information("Alterando os registros.");
                             foreach (DataRow r in table.Rows)
                             {
-                                if (this.bisACEConnection.executeProcedure(String.Format("update bsuser.persons set grade = '{0}' where persid = '{1}'", "SG3", r["persid"].ToString())))
-                                    this.LogTask.Information("Registro alterado com sucesso.");
-                                else
-                                    this.LogTask.Information("Erro ao alterar o registro.");
+                                writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7}", l.rg, l.cpf, l.colaborador, l.liberado, r["persid"].ToString(), r["persno"].ToString(), r["nome"].ToString(), r["persclassid"].ToString(), l.id_colaborador));
                             }
                         }
+                        else
+                            writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7}", l.rg, l.cpf, l.colaborador, l.liberado, "sempersid", "sempersno", "semnome", "sempersclassid", l.id_colaborador));
                     }
                 }
             }
