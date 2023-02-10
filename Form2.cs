@@ -4,6 +4,7 @@ using AMSLib.Manager;
 using AMSLib.SQL;
 using HzBISCommands;
 using HzLibConnection.Data;
+using HzLibWindows.Common;
 using Newtonsoft.Json;
 using Serilog;
 using System;
@@ -539,6 +540,107 @@ namespace FemsaTools
                 pgBar.Visible = false;
                 if (lstData.Items.Count > 0)
                     btnExport.Visible = true;
+            }
+        }
+
+        private void Form2_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                this.ReadParameters();
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                using (DataTable table = BSSQLClients.GetClients(this.bisACEConnection, "geral", "null"))
+                    Objetos.LoadCombo(cmbDivisao, table, "NAME", "CLIENTID", "NAME", true);
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string authstr = null;
+                string persid = null;
+                List<string> authString = new List<string>();
+                List<BSAuthorizationInfo> auths = null;
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\ChangeDivision.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.Cursor = Cursors.WaitCursor;
+                this.LogTask.Information(String.Format("Pesquisando o PERSNO: {0}", txtREDivisao.Text));
+                using (DataTable table = this.bisACEConnection.loadDataTable(String.Format("select persid from bsuser.persons where persno = '{0}' and status = 1", txtREDivisao.Text)))
+                {
+                    if (table == null || table.Rows.Count < 1)
+                        throw new Exception("Colaborador não encontrado!");
+
+                    persid = table.Rows[0]["persid"].ToString();
+                    auths = BSSQLPersons.GetAllAuthorizations(this.bisACEConnection, table.Rows[0]["persid"].ToString());
+                    if (auths == null || auths.Count < 1)
+                        this.LogTask.Information("Nao ha autorizacoes para esse colaborador.");
+                    else
+                    {
+                        authString.Clear();
+                        this.LogTask.Information(String.Format("{0} Autorizacoes encontradas.", table.Rows.Count.ToString()));
+                        foreach (BSAuthorizationInfo auth in auths)
+                        {
+                            authString.Add(auth.AUTHID);
+                        }
+                    }
+                }
+
+                int totalBefore = auths != null ? auths.Count : 0;
+                int totalAfter = -1;
+
+                BSPersons persons = new BSPersons(this.BISManager, this.bisACEConnection);
+                this.LogTask.Information("Carregando a pessoa.");
+                if (persons.Load(txtREDivisao.Text, BS_STATUS.ACTIVE))
+                {
+                    this.LogTask.Information("Pessoa carregada com sucesso.");
+                    this.LogTask.Information("Alterando a divisao.");
+                    if (persons.ChangeClient(((HzItem)cmbDivisao.SelectedItem).value) == BS_SAVE.SUCCESS)
+                    {
+                        this.LogTask.Information("Divisao alterada com sucesso.");
+                        this.LogTask.Information("Atribuindo as autorizacoes");
+                        if (persons.SetAuthorization(authString.ToArray()) == BS_ADD.SUCCESS)
+                            this.LogTask.Information("Autorizacoes atribuidas com sucesso.");
+
+                        auths = BSSQLPersons.GetAllAuthorizations(this.bisACEConnection, persid);
+                        totalAfter = auths != null ? auths.Count : 0;
+
+                        if (totalAfter != totalBefore)
+                            throw new Exception(String.Format("Total Antes: {0}, Total Depois: {1}. Erro na alteracao. Rotina interrompida.", totalBefore.ToString(), totalAfter.ToString()));
+
+                        this.LogTask.Information(String.Format("Total Antes: {0}, Total Depois: {1}. Alteracao concluida com sucesso.", totalBefore.ToString(), totalAfter.ToString()));
+                    }
+                    else
+                        this.LogTask.Information("Erro ao alterar a divisao.");
+                }
+                else
+                    this.LogTask.Information("Erro ao carregar a pessoa.");
+
+                MessageBox.Show("Alteração concluída com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
             }
         }
     }

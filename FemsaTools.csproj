@@ -35,8 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AMSLib">
-      <HintPath>..\..\AMSLib - Copia\bin\Debug\AMSLib.dll</HintPath>
+    <Reference Include="AMSLib, Version=3.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\AMSLib\bin\Debug\AMSLib.dll</HintPath>
     </Reference>
     <Reference Include="HzBISCommands, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -44,6 +45,9 @@
     </Reference>
     <Reference Include="HzLibConnection">
       <HintPath>..\..\..\..\Projects\HzLibConnection\HzLibConnection\bin\Debug\HzLibConnection.dll</HintPath>
+    </Reference>
+    <Reference Include="HzLibWindows">
+      <HintPath>..\..\..\..\Projects\HzLibWindows\HzLibWindows\bin\Debug\HzLibWindows.dll</HintPath>
     </Reference>
     <Reference Include="HzUtilClasses">
       <HintPath>..\..\..\HzUtilClasses\HzUtilClasses\bin\Debug\HzUtilClasses.dll</HintPath>
