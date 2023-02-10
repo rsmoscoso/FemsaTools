@@ -1437,7 +1437,7 @@ namespace FemsaTools
         }
         private void button13_Click(object sender, EventArgs e)
         {
-            StreamReader reader = new StreamReader(@"c:\temp\femsabh.csv");
+            StreamReader reader = null;
             try
             {
                 this.LogTask = new LoggerConfiguration()
@@ -1454,45 +1454,46 @@ namespace FemsaTools
                 string persno = null;
                 List<string> auths = null;
                 string clientid = null;
-                reader.ReadLine();
-                while ((line = reader.ReadLine()) != null)
+                string authid = "0013B644E3CC1D3E";
+                string[] files = Directory.GetFiles(@"C:\temp\RONALDO\jur geral");
+                BSPersons per = new BSPersons(this.BISManager, this.bisACEConnection);
+                int bytesCount = 0;
+                foreach(string file in files)
                 {
-                    string[] arr = line.Split(';');
-                    persid = arr[0];
-                    persno = arr[1];
-
-                    this.LogTask.Information(String.Format("Pesquisando autorizacoes e clientid do RE: {0}", persno));
-                    using (DataTable table = this.getAllAuthPersno(persno))
+                    FileInfo f = new FileInfo(file);
+                    reader = new StreamReader(file);
+                    reader.ReadLine();
+                    this.LogTask.Information(String.Format("Arquivo: {0}, Tamanho: {1}", file, f.Length.ToString()));
+                    bytesCount = 0;
+                    while ((line = reader.ReadLine()) != null)
                     {
-                        if (table != null && table.Rows.Count > 0)
+                        string[] arr = line.Split(',');
+                        persno = arr[0];
+                        bytesCount += System.Text.Encoding.Unicode.GetBytes(line).Length;
+                        this.LogTask.Information(String.Format("{0} de {1}", bytesCount.ToString(), f.Length.ToString()));
+                        this.LogTask.Information(String.Format("Verificando a autorizacao da pessoa: {0}", persno));
+                        if (!String.IsNullOrEmpty(arr[0]))
                         {
-                            this.LogTask.Information("{0} autorizacoes encontradas.", table.Rows.Count.ToString());
-                            auths = new List<string>();
-                            foreach (DataRow row in table.Rows)
-                                auths.Add(row["authid"].ToString());
-
-                            clientid = table.Rows[0]["clientid"].ToString();
-
-                            BSPersons persons = new BSPersons(this.BISManager, this.bisACEConnection);
-                            this.LogTask.Information("Carregando a pessoa.");
-                            if (persons.Load(persno, BS_STATUS.ACTIVE))
+                            this.LogTask.Information("Verificando a existencia da autorizacao.");
+                            using (DataTable tbl = this.bisACEConnection.loadDataTable(String.Format("select per.persid from bsuser.authperperson aper " +
+                                "inner join bsuser.persons per on per.persid = aper.persid where authid = '{0}' and per.persno = '{1}'", authid, persno)))
                             {
-                                this.LogTask.Information("Pessoa carregada com sucesso.");
-                                this.LogTask.Information(String.Format("Alterando para o clientid {0}", clientid));
-                                if (persons.ChangeClient(clientid) == BS_SAVE.SUCCESS)
+                                if (tbl == null || tbl.Rows.Count < 1)
                                 {
-                                    this.LogTask.Information("Clientid alterado com sucesso.");
-                                    if (persons.SetAuthorization(auths.ToArray()) == BS_ADD.SUCCESS)
-                                        this.LogTask.Information("Autorizacoes atribuidas com sucesso.");
-                                    else
-                                        this.LogTask.Information("Erro ao atribuir as autorizacoes.");
+                                    this.LogTask.Information("Autorizacao inexistente.");
+                                    this.LogTask.Information("Carregando a pessoa");
+                                    if (per.Load(arr[0], BS_STATUS.ACTIVE))
+                                    {
+                                        this.LogTask.Information("Pessoa carregada com sucesso.");
+                                        if (per.AddAuthorization(authid) == API_RETURN_CODES_CS.API_SUCCESS_CS)
+                                            this.LogTask.Information("Autorizacao atribuida com sucesso.");
+                                        else
+                                            this.LogTask.Information("Erro ao atribuir a autorizacao.");
+                                    }
                                 }
                                 else
-                                    this.LogTask.Information("Erro ao alterar o Clientid..");
+                                    this.LogTask.Information("Autorizacao ja atribuida.");
                             }
-                            else
-                                this.LogTask.Information("Erro ao carregar a pessoa.");
-
                         }
                     }
                 }
@@ -1634,7 +1635,7 @@ namespace FemsaTools
                 var client = new ExecutivaPortClient();
                 //e chame este método assíncrono com usuario, senha e o numero 3
                 var response = await client.getLiberacaoWithCredentials(@"webservice.femsabrasil", @"Executiva@femsab@3496", 3);
-                var x = response.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S"); });
+                var x = response.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S") && l.status_alocacao.Equals("S"); });
 
                 string sql = null;
                 string firstname = "";
@@ -1649,7 +1650,7 @@ namespace FemsaTools
 
                     this.LogTask.Information(String.Format("{0} de {1}. RG: {2}, CPF: {3}, Nome: {4}", (i++).ToString(), x.Count.ToString(), l.rg, l.cpf, l.colaborador.Replace("'", "")));
 
-                    sql = String.Format("select persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), persclassid from bsuser.persons where status = 1 and persclass = 'E' and ((persno = '{0}' or persno = '{1}') or (firstname = '{2}' and lastname = '{3}'))",
+                    sql = String.Format("select persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), persclassid from bsuser.persons where status = 1 and persclass = 'E' and (persno = '{0}' or persno = '{1}')",
                         l.rg.Replace("'", ""), l.cpf.Replace("'", ""), firstname, lastname);
                     using (DataTable table = this.bisACEConnection.loadDataTable(sql))
                     {

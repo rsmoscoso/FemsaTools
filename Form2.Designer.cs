@@ -31,6 +31,7 @@ namespace FemsaTools
         {
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.button3 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.btnExecute = new System.Windows.Forms.Button();
             this.txtRE = new System.Windows.Forms.TextBox();
@@ -39,18 +40,41 @@ namespace FemsaTools
             this.button6 = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.button2 = new System.Windows.Forms.Button();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.lstData = new System.Windows.Forms.ListView();
+            this.Data = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Persid = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Tipo = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Persno = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Nome = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.CardNO = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Local = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Mensagem = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.btnExport = new System.Windows.Forms.Button();
+            this.pgBar = new System.Windows.Forms.ProgressBar();
+            this.rdbAll = new System.Windows.Forms.RadioButton();
+            this.button4 = new System.Windows.Forms.Button();
+            this.txtREInfo = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.rdbAuthorized = new System.Windows.Forms.RadioButton();
+            this.rdbNotYet = new System.Windows.Forms.RadioButton();
+            this.rdbAccess = new System.Windows.Forms.RadioButton();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.button3 = new System.Windows.Forms.Button();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -70,6 +94,16 @@ namespace FemsaTools
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Rotinas WFM";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(6, 88);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(121, 35);
+            this.button3.TabIndex = 11;
+            this.button3.Text = "IMPORTACÃO PRÓPRIOS - LISTA";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // groupBox1
             // 
@@ -150,19 +184,185 @@ namespace FemsaTools
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.lstData);
+            this.tabPage3.Controls.Add(this.groupBox2);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(768, 400);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Troubleshooting";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // lstData
+            // 
+            this.lstData.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.Data,
+            this.Persid,
+            this.Tipo,
+            this.Persno,
+            this.Nome,
+            this.CardNO,
+            this.Local,
+            this.Mensagem});
+            this.lstData.HideSelection = false;
+            this.lstData.Location = new System.Drawing.Point(12, 131);
+            this.lstData.Name = "lstData";
+            this.lstData.Size = new System.Drawing.Size(741, 253);
+            this.lstData.TabIndex = 11;
+            this.lstData.UseCompatibleStateImageBehavior = false;
+            // 
+            // Data
+            // 
+            this.Data.Text = "Data";
+            // 
+            // Persid
+            // 
+            this.Persid.Text = "Persid";
+            // 
+            // Tipo
+            // 
+            this.Tipo.DisplayIndex = 7;
+            this.Tipo.Text = "Tipo";
+            // 
+            // Persno
+            // 
+            this.Persno.DisplayIndex = 2;
+            this.Persno.Text = "Persno";
+            // 
+            // Nome
+            // 
+            this.Nome.DisplayIndex = 3;
+            this.Nome.Text = "Nome";
+            this.Nome.Width = 200;
+            // 
+            // CardNO
+            // 
+            this.CardNO.DisplayIndex = 4;
+            this.CardNO.Text = "CardNO";
+            // 
+            // Local
+            // 
+            this.Local.DisplayIndex = 5;
+            this.Local.Text = "Local";
+            this.Local.Width = 150;
+            // 
+            // Mensagem
+            // 
+            this.Mensagem.DisplayIndex = 6;
+            this.Mensagem.Text = "Mensagem";
+            this.Mensagem.Width = 150;
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.btnExport);
+            this.groupBox2.Controls.Add(this.pgBar);
+            this.groupBox2.Controls.Add(this.rdbAll);
+            this.groupBox2.Controls.Add(this.button4);
+            this.groupBox2.Controls.Add(this.txtREInfo);
+            this.groupBox2.Controls.Add(this.label2);
+            this.groupBox2.Controls.Add(this.rdbAuthorized);
+            this.groupBox2.Controls.Add(this.rdbNotYet);
+            this.groupBox2.Controls.Add(this.rdbAccess);
+            this.groupBox2.Location = new System.Drawing.Point(12, 14);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(524, 100);
+            this.groupBox2.TabIndex = 10;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Verificar INFO";
+            // 
+            // btnExport
+            // 
+            this.btnExport.Location = new System.Drawing.Point(257, 42);
+            this.btnExport.Name = "btnExport";
+            this.btnExport.Size = new System.Drawing.Size(107, 28);
+            this.btnExport.TabIndex = 11;
+            this.btnExport.Text = "Exportar";
+            this.btnExport.UseVisualStyleBackColor = true;
+            this.btnExport.Visible = false;
+            this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+            // 
+            // pgBar
+            // 
+            this.pgBar.Location = new System.Drawing.Point(6, 73);
+            this.pgBar.Name = "pgBar";
+            this.pgBar.Size = new System.Drawing.Size(512, 23);
+            this.pgBar.Step = 1;
+            this.pgBar.TabIndex = 10;
+            this.pgBar.Visible = false;
+            // 
+            // rdbAll
+            // 
+            this.rdbAll.AutoSize = true;
+            this.rdbAll.Checked = true;
+            this.rdbAll.Location = new System.Drawing.Point(248, 19);
+            this.rdbAll.Name = "rdbAll";
+            this.rdbAll.Size = new System.Drawing.Size(55, 17);
+            this.rdbAll.TabIndex = 5;
+            this.rdbAll.TabStop = true;
+            this.rdbAll.Text = "Todos";
+            this.rdbAll.UseVisualStyleBackColor = true;
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(144, 42);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(107, 28);
+            this.button4.TabIndex = 9;
+            this.button4.Text = "Executar";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
+            // txtREInfo
+            // 
+            this.txtREInfo.Location = new System.Drawing.Point(38, 47);
+            this.txtREInfo.Name = "txtREInfo";
+            this.txtREInfo.Size = new System.Drawing.Size(100, 20);
+            this.txtREInfo.TabIndex = 4;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(7, 50);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(25, 13);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "RE;";
+            // 
+            // rdbAuthorized
+            // 
+            this.rdbAuthorized.AutoSize = true;
+            this.rdbAuthorized.Location = new System.Drawing.Point(144, 19);
+            this.rdbAuthorized.Name = "rdbAuthorized";
+            this.rdbAuthorized.Size = new System.Drawing.Size(98, 17);
+            this.rdbAuthorized.TabIndex = 2;
+            this.rdbAuthorized.Text = "Não Autorizado";
+            this.rdbAuthorized.UseVisualStyleBackColor = true;
+            // 
+            // rdbNotYet
+            // 
+            this.rdbNotYet.AutoSize = true;
+            this.rdbNotYet.Location = new System.Drawing.Point(72, 19);
+            this.rdbNotYet.Name = "rdbNotYet";
+            this.rdbNotYet.Size = new System.Drawing.Size(66, 17);
+            this.rdbNotYet.TabIndex = 1;
+            this.rdbNotYet.Text = "Expirado";
+            this.rdbNotYet.UseVisualStyleBackColor = true;
+            // 
+            // rdbAccess
+            // 
+            this.rdbAccess.AutoSize = true;
+            this.rdbAccess.Location = new System.Drawing.Point(6, 19);
+            this.rdbAccess.Name = "rdbAccess";
+            this.rdbAccess.Size = new System.Drawing.Size(60, 17);
+            this.rdbAccess.TabIndex = 0;
+            this.rdbAccess.Text = "Acesso";
+            this.rdbAccess.UseVisualStyleBackColor = true;
+            // 
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
-            // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(6, 88);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(121, 35);
-            this.button3.TabIndex = 11;
-            this.button3.Text = "IMPORTACÃO PRÓPRIOS - LISTA";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // Form2
             // 
@@ -171,12 +371,16 @@ namespace FemsaTools
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.tabControl1);
             this.Name = "Form2";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Administração BIS";
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
+            this.tabPage3.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -195,5 +399,26 @@ namespace FemsaTools
         private System.Windows.Forms.TextBox txtRE;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.RadioButton rdbAll;
+        private System.Windows.Forms.TextBox txtREInfo;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.RadioButton rdbAuthorized;
+        private System.Windows.Forms.RadioButton rdbNotYet;
+        private System.Windows.Forms.RadioButton rdbAccess;
+        private System.Windows.Forms.ListView lstData;
+        private System.Windows.Forms.ColumnHeader Data;
+        private System.Windows.Forms.ColumnHeader Persid;
+        private System.Windows.Forms.ColumnHeader Persno;
+        private System.Windows.Forms.ColumnHeader Nome;
+        private System.Windows.Forms.ColumnHeader CardNO;
+        private System.Windows.Forms.ColumnHeader Local;
+        private System.Windows.Forms.ColumnHeader Mensagem;
+        private System.Windows.Forms.ProgressBar pgBar;
+        private System.Windows.Forms.Button btnExport;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.ColumnHeader Tipo;
     }
 }

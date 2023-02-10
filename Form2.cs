@@ -255,6 +255,8 @@ namespace FemsaTools
                     else
                         this.LogTask.Information("Erro ao carregar o colaborador.");
                 }
+
+                this.Cursor = Cursors.Default;
             }
             catch (Exception ex)
             {
@@ -263,6 +265,7 @@ namespace FemsaTools
             }
             finally
             {
+                this.Cursor = Cursors.Default;
                 this.LogTask.Information("Descontecando o BIS.");
                 if (this.BISManager.Disconnect())
                     this.LogTask.Information("BIS desconectado com sucesso.");
@@ -385,6 +388,158 @@ namespace FemsaTools
                 this.LogTask.Information("Rotina finalizada..");
             }
 
+        }
+
+        /// <summary>
+        /// Retorna o tipo da pesquisa.
+        /// </summary>
+        /// <returns></returns>
+        private string getInfoType()
+        {
+            if (rdbAccess.Checked)
+                return "access";
+            else if (rdbAuthorized.Checked)
+                return "authoriza";
+            else if (rdbNotYet.Checked)
+                return "not yet";
+            else
+                return null;
+        }
+        private void button4_Click(object sender, EventArgs e)
+        {
+            StreamReader reader = null;
+            StreamWriter writer = null;
+            try
+            {
+                lstData.View = View.Details;
+
+                this.ReadParameters();
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                if (openFileDialog1.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                this.Cursor = Cursors.WaitCursor;
+
+                lstData.Items.Clear();
+
+                string filename = openFileDialog1.FileName;
+                float length = 0;
+                reader = new StreamReader(filename);
+                while (reader.ReadLine() != null)
+                    length++;
+                reader.Close();
+                reader = new StreamReader(filename);
+                string line = null;
+                int pos = -1;
+                string cardid = null;
+                string deviceid = null;
+                BSPersonsInfo person = new BSPersonsInfo();
+                //writer.WriteLine("Data;PERSNO;Nome;CardNO;Local");
+                string[] vw = new string[8];
+                ListViewItem item = null;
+                string tipo = getInfoType();
+                pgBar.Visible = true;
+                pgBar.Refresh();
+                float lineCount = 0;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    lineCount++;
+                    pgBar.Value = (int)Math.Truncate((lineCount / length) * 100);
+                    pgBar.Refresh();
+                    if (lineCount % 1000 == 0)
+                        this.Refresh();
+
+                    string[] arr = line.Trim().Split(' ');
+
+                    if ((pos = arr[0].IndexOf("-")) <= 0 || arr.Length < 10)
+                        continue;
+
+                    try
+                    {
+                        string id = arr[0].Substring(0, pos);
+                        DateTime date = DateTime.Parse(arr[1] + " " + arr[2]);
+                        deviceid = arr[4];
+                        cardid = arr[6];
+
+                        // exibe apenas os eventos relativos ao acesso
+                        if ((String.IsNullOrEmpty(tipo) && !String.IsNullOrEmpty(arr[6])) || (!String.IsNullOrEmpty(arr[7]) 
+                            && !String.IsNullOrEmpty(arr[4]) && !String.IsNullOrEmpty(arr[6]) && line.IndexOf(tipo) > 0))
+                        {
+                            person = BSSQLPersons.GetPersonFromCardID(this.bisACEConnection, cardid);
+                            if (person == null)
+                                continue;
+                            if (String.IsNullOrEmpty(txtREInfo.Text) || !String.IsNullOrEmpty(txtREInfo.Text) && person.DOCUMENT.Equals(txtREInfo.Text))
+                            {
+                                person.RESERVE1 = BSSQLDevices.GetDescription(this.bisACEConnection, deviceid);
+                                if (person != null)
+                                {
+                                    vw[0] = arr[0].Substring(pos + 1, (arr[0].Length - (pos + 1))) + " " + arr[1];
+                                    vw[1] = person.PERSID;
+                                    vw[2] = person.PERSCLASS;
+                                    vw[3] = person.DOCUMENT;
+                                    vw[4] = person.NAME;
+                                    vw[5] = person.CARDNO;
+                                    vw[6] = person.RESERVE1;
+                                    vw[7] = !String.IsNullOrEmpty(arr[7]) ? arr[7] : "Indefinido";
+                                    item = new ListViewItem(vw);
+                                    lstData.Items.Add(item);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        this.Cursor = Cursors.Default;
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+                reader.Close();
+                //writer.Close();
+                this.Cursor = Cursors.Default;
+
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                pgBar.Visible = false;
+                if (lstData.Items.Count > 0)
+                    btnExport.Visible = true;
+            }
+        }
+
+        private void btnExport_Click(object sender, EventArgs e)
+        {
+            StreamWriter writer = null;
+            try
+            {
+                if (this.saveFileDialog1.ShowDialog() == DialogResult.Cancel)
+                    return;
+                this.Cursor = Cursors.WaitCursor;
+                writer = new StreamWriter(this.saveFileDialog1.FileName);
+                writer.WriteLine("Data;Persid;Tipo;Documento;Nome;Cartao;Local;Mensagem");
+                foreach (ListViewItem item in lstData.Items)
+                    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[2].Text, item.SubItems[3].Text, 
+                        item.SubItems[4].Text, item.SubItems[5].Text, item.SubItems[6].Text, item.SubItems[7].Text));
+
+                writer.Close();
+                this.Cursor = Cursors.Default;
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                pgBar.Visible = false;
+                if (lstData.Items.Count > 0)
+                    btnExport.Visible = true;
+            }
         }
     }
 }

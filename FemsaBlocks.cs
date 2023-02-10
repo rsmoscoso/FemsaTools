@@ -156,7 +156,7 @@ namespace FemsaTools
                 string sql = String.Format("exec msdb..sp_send_dbmail @profile_name = 'Femsa', @recipients = {0}, @subject = '{1}', @body = '{2}', @body_format = 'html'",
                     recipients, subject, body);
                 //karen.costa@kof.com.mx;fernanda.santos@kof.com.mx
-                this.bisConnection.executeProcedure(sql);
+                //this.bisConnection.executeProcedure(sql);
                 this.LogTask.Information("E-mail enviado com sucesso.");
             }
             catch (Exception ex)
@@ -199,7 +199,7 @@ namespace FemsaTools
                 string body = results.Count > 0 ? String.Format("Processamento realizado com sucesso. {0} pessoas processadas", results.Count.ToString()) :
                     "Erro ao realizar a integracao WFM x BIS!";
                 List<BSResult> resultNF = results.FindAll(d => d.Action == BLACTION.NOTFOUND || d.Action == BLACTION.NOCARD);
-                string HTML = "<html><body>Rotina Executada com Sucess!</body></html>";
+                string HTML = "<html><body>Rotina Executada com Sucesso!</body></html>";
                 this.SendMail(subject, HTML);
             }
             catch (Exception ex)
@@ -377,6 +377,7 @@ namespace FemsaTools
                 List<BSResult> results = new List<BSResult>();
                 bool bErro = false;
                 int bErroLoad = 0;
+                int bErroSave = 0;
                 int countRE = 1;
 
                 this.LogTask.Information("Iniciando a rotina de validacao do acesso atraves do WFM!");
@@ -396,8 +397,7 @@ namespace FemsaTools
                         if (tableWF != null && tableWF.Rows.Count > 0)
                         {
                             this.LogTask.Information(String.Format("Registros encontrados: {0}", tableWF.Rows.Count.ToString()));
-                            if (String.IsNullOrEmpty(re))
-                                this.SendMail("Rotina de Bloqueio/Desbloqueios", String.Format("Registros encontrados: {0}", tableWF.Rows.Count.ToString()));
+                            this.SendMail("Rotina de Bloqueio/Desbloqueio", String.Format("Registros encontrados: {0}", tableWF.Rows.Count.ToString()));
                             bool bErroBIS = false;
 
                             foreach (DataRow rowWF in tableWF.Rows)
@@ -409,10 +409,9 @@ namespace FemsaTools
                                     "cmpVlTolerancia, per.clientid from bsuser.persons per inner join Horizon..tblTolerancia tol on tol.clientid = per.clientid left outer join bsuser.cards cd on cd.persid = per.persid " +
                                     "left outer join bsuser.LOCKOUTS lock on per.persid = lock.persid inner join bsuser.acpersons acpe on acpe.persid = per.persid " +
                                     "where persno = '{0}' and per.status = 1 and tol.cmpInStatus = 1 and cd.status != 0 and persclass = 'E' ", rowWF["re"].ToString());
-                                //sql = String.Format("select distinct per.persid, cardid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), lockid, lock.CAUSEOFLOCK, cmpVlTolerancia, per.clientid " +
-                                //    " from bsuser.persons per inner join Horizon..tblTolerancia tol on tol.clientid = per.clientid left outer join bsuser.cards cd on cd.persid = per.persid " +
-                                //    " left outer join bsuser.LOCKOUTS lock on per.persid = lock.persid " +
-                                //    " where persno = '{0}' and per.status = 1 and tol.cmpInStatus = 1 ", rowWF["re"].ToString());
+
+                                if (iCount == tableWF.Rows.Count / 2)
+                                    this.SendMail("Rotina de Bloqueio/Desbloqueio", "50% dos registros processados!");
 
                                 using (DataTable tableBIS = bisACEConnection.loadDataTable(sql))
                                 {
@@ -489,12 +488,12 @@ namespace FemsaTools
                                                 results.Add(result);
 
                                                 bErroBIS = true;
-                                                this.LogTask.Information(String.Format("Erro de processamento no BIS. Rotina interrompida! PERSID: {0}. Erro: {1}", rowBIS["persid"].ToString(),
+                                                this.LogTask.Information(String.Format("Erro de processamento no BIS. PERSID: {0}. Erro: {1}", rowBIS["persid"].ToString(),
                                                     persons.GetErrorMessage()));
                                                 ++bErroLoad;
 
                                                 if (bErroLoad == 5 && String.IsNullOrEmpty(re))
-                                                    this.SendMail("Rotina de Blqqueios", "Houve mais de 5 erros ao carregar o colaborador. Favor entrar em contato com o suporte!");
+                                                    this.SendMail("Rotina de Bloqueio/Desbloqueio", "Houve mais de 5 erros ao carregar o colaborador. Favor entrar em contato com o suporte!");
                                             }
                                             this.LogTask.Information("Pessoa carregada com sucesso.");
 
@@ -633,11 +632,15 @@ namespace FemsaTools
                                                         results.Add(result);
                                                         this.LogTask.Information("Erro ao atualizar a validade.");
                                                         bErro = true;
+                                                        bErroSave++;
+                                                        if (bErroSave == 5)
+                                                            this.SendMail("Rotina de Bloqueio/Desbloqueio", "Houve mais de 5 erros ao salvar a validade do colaborador. Favor entrar em contato com o suporte!");
                                                     }
                                                 }
-                                                catch
+                                                catch (Exception ex)
                                                 {
-
+                                                    this.LogTask.Information(String.Format("Erro ao processar: {0}", ex.Message));
+                                                    this.SendMail("Rotina de Bloqueio/Desbloqueio", "Erro na gravação da validade! Erro Severo! Favor contactar o suporte!");
                                                 }
                                             }
                                         }
@@ -646,7 +649,7 @@ namespace FemsaTools
                                     {
                                         this.LogTask.Information(String.Format("Erro ao processar: {0}", ex.Message));
                                         if (String.IsNullOrEmpty(re))
-                                            this.SendMail("Rotina de Bloqueios", "Erro de processamento no BIS. Rotina interrompida! Erro Severo! Favor contactar o suporte!");
+                                            this.SendMail("Rotina de Bloqueio/Desbloqueio", "Erro de processamento no BIS. Rotina interrompida! Erro Severo! Favor contactar o suporte!");
                                     }
                                 }
                             }
@@ -663,14 +666,14 @@ namespace FemsaTools
                         {
                             this.LogTask.Information(String.Format("Erro: {0}", this.bisManager.GetErrorMessage()));
                             if (String.IsNullOrEmpty(re))
-                                this.SendMail("Rotina de Bloqueios", "Erro de processamento do WFM. Rotina interrompida! Erro Severo! Favor contactar o suporte!");
+                                this.SendMail("Rotina de Bloqueio/Desbloqueio", "Erro de processamento do WFM. Rotina interrompida! Erro Severo! Favor contactar o suporte!");
                         }
                     }
                     else
                     {
                         this.LogTask.Information("Erro ao executar a pesquisa no WFM. Nenhum reigstro retornado!");
                         if (String.IsNullOrEmpty(re))
-                            this.SendMail("Rotina de Bloqueios", "Erro de processamento do WFM. Rotina interrompida! Erro Severo! Favor contactar o suporte!");
+                            this.SendMail("Rotina de Bloqueio/Desbloqueio", "Erro de processamento do WFM. Rotina interrompida! Erro Severo! Favor contactar o suporte!");
                     }
                 }
                 else
@@ -678,7 +681,7 @@ namespace FemsaTools
                     this.LogTask.Information(String.Format("Integracao nao realziada devido a erro de conexao com o BIS! Erro: {0}",
                         this.bisManager.GetErrorMessage()));
                     if (String.IsNullOrEmpty(re))
-                        this.SendMail("Rotina de Bloqueios", "Erro de processamento do WFM. Rotina interrompida! Erro Severo! Favor contactar o suporte!");
+                        this.SendMail("Rotina de Bloqueio/Desbloqueio", "Erro de processamento do WFM. Rotina interrompida! Erro Severo! Favor contactar o suporte!");
                 }
 
                 return true;
@@ -687,7 +690,7 @@ namespace FemsaTools
             {
                 this.LogTask.Information(ex, ex.Message);
                 if (String.IsNullOrEmpty(re))
-                    this.SendMail("Rotina de Bloqueios", "Erro Generico. Rotina interrompida! Erro Severo! Favor contactar o suporte!");
+                    this.SendMail("Rotina de Bloqueio/Desbloqueio", "Erro Generico. Rotina interrompida! Erro Severo! Favor contactar o suporte!");
                 return false;
             }
             finally
