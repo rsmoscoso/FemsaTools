@@ -1,0 +1,472 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>HzLibConnection</name>
+    </assembly>
+    <members>
+        <member name="T:Comando">
+            <summary>
+            Classe que gerencia as operações de comando ao banco de dados.
+            </summary>
+        </member>
+        <member name="P:Comando.Event">
+            <summary>
+            Geradora do evento de exceção
+            </summary>
+        </member>
+        <member name="P:Comando.EventArgs">
+            <summary>
+            Evento
+            </summary>
+        </member>
+        <member name="M:Comando.executeProcedureAsync(HzLibConnection.Data.Conexao,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="c"></param>
+            <param name="sql"></param>
+            <returns></returns>
+        </member>
+        <member name="T:HzLibConnection.Data.ComandoEvent">
+            <summary>
+            Classe que gera o evento de exceção
+            </summary>
+        </member>
+        <member name="M:HzLibConnection.Data.ComandoEvent.raise(System.Object)">
+            <summary>
+            Gera o evento da exceção
+            </summary>
+            <param name="o">Objeto da exceção</param>
+        </member>
+        <member name="T:HzLibConnection.Data.ComandoEventArgs">
+            <summary>
+            Classe que gerencia a exceção 
+            </summary>
+        </member>
+        <member name="M:HzLibConnection.Data.ComandoEventArgs.getMessage">
+            <summary>
+            Retorna a mensagem.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Data.ComandoEventArgs.getErrorNumber">
+            <summary>
+            Retorna o número do erro gerado.
+            Compatível com o sqlexception apenas.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Data.ComandoEventArgs.getServer">
+            <summary>
+            Retorna o servidor do banco de dados.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Data.ComandoEventArgs.getComandName">
+            <summary>
+            Retorna o nome do comando que gerou a exceção.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Data.ComandoEventArgs.getErros">
+            <summary>
+            Retorna a coleção de erros sql server.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Data.ComandoEventArgs.#ctor(System.Object)">
+            <summary>
+            Construtor da classe.        
+            </summary>
+            <param name="ex">Objeto de exceção genérica gerada pelo comando.</param>
+        </member>
+        <member name="T:HzLibConnection.Data.Conexao">
+            <summary>
+            Summary description for Conexao
+            </summary>
+        </member>
+        <member name="T:HzLibConnection.Data.HzConexao">
+            <summary>
+            Classe com os dados de conexão com o banco de dados
+            </summary>
+        </member>
+        <member name="M:HzLibConnection.Data.HzConexao.loadDataset(System.String)">
+            <summary>
+            Carrega o dataset
+            </summary>
+            <param name="sql"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Data.HzConexao.loadDataTable(System.String)">
+            <summary>
+            Carrega o dataset
+            </summary>
+            <param name="sql"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Data.HzConexao.loadReader(System.String)">
+            <summary>
+            Carrega o dataset
+            </summary>
+            <param name="sql"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Data.HzConexao.executeProcedure(System.String)">
+            <summary>
+            Executa uma stored procedure
+            </summary>
+            <param name="sql"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Data.HzConexao.executeProcedureAsync(System.String)">
+            <summary>
+            Executa uma stored procedure
+            </summary>
+            <param name="sql"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Data.HzConexao.executeProcedureOpen(System.String)">
+            <summary>
+            Executa uma stored procedure e não fecha a conexão.
+            </summary>
+            <param name="sql"></param>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Data.HzConexao.getConexao">
+            <summary>
+            Retorna a conexão ativa.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Data.HzConexao.Event_ceHandler(System.Object,HzLibConnection.Data.ComandoEventArgs)">
+            <summary>
+            Gerenciador dos eventos dos comandos sql.
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="M:HzLibConnection.Data.HzConexao.#ctor">
+            <summary>
+            Construtor da classe.
+            </summary>
+        </member>
+        <member name="M:HzLibConnection.Data.HzConexao.#ctor(System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Construtor da classe.
+            </summary>
+            <param name="host"></param>
+            <param name="user"></param>
+            <param name="pwd"></param>
+            <param name="database"></param>
+            <param name="providername"></param>
+        </member>
+        <member name="M:HzLibConnection.Data.HzConexao.#ctor(System.String,System.String)">
+            <summary>
+            Construtor da classe.
+            </summary>
+            <param name="host"></param>
+            <param name="user"></param>
+            <param name="pwd"></param>
+            <param name="database"></param>
+            <param name="providername"></param>
+        </member>
+        <member name="T:HzLibConnection.Sql.TipoCampo">
+            <summary>
+            Estrutura com os tipos de campos para pesquisa
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.Numero">
+            <summary>
+            Número.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.String">
+            <summary>
+            String.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.Data">
+            <summary>
+            Data.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.NumeroOR">
+            <summary>
+            Número numa cláusula OR.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.StringOR">
+            <summary>
+            String numa cláusula OR.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.DataOR">
+            <summary>
+            Data numa cláusula OR.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.Between">
+            <summary>
+            Between.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.Like">
+            <summary>
+            Like.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.LikeOR">
+            <summary>
+            Like numa cláusula OR
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.Null">
+            <summary>
+            Null.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.NotNull">
+            <summary>
+            Not null.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.NullOR">
+            <summary>
+            Null numa cláusula OR
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoCampo.NotNullOR">
+            <summary>
+            Not null numa cláusula OR
+            </summary>
+        </member>
+        <member name="T:HzLibConnection.Sql.SinalPesquisa">
+            <summary>
+            Estrutura com os tipos de sinal para pesquisa
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.SinalPesquisa.Maior">
+            <summary>
+            Maior que
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.SinalPesquisa.Menor">
+            <summary>
+            Menor que
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.SinalPesquisa.Igual">
+            <summary>
+            Igual a
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.SinalPesquisa.MenorIgual">
+            <summary>
+            Menor ou igual a
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.SinalPesquisa.MaiorIgual">
+            <summary>
+            Maior ou igual a
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.SinalPesquisa.Like">
+            <summary>
+            Like
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.SinalPesquisa.Between">
+            <summary>
+            Between
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.SinalPesquisa.Diferente">
+            <summary>
+            Diferente que
+            </summary>
+        </member>
+        <member name="T:HzLibConnection.Sql.TipoPercent">
+            <summary>
+            Estrutura com os percents das pesquisa LIKE
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoPercent.Nenhum">
+            <summary>
+            Não há percent.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoPercent.Inicio">
+            <summary>
+            Percent no início da pesquisa.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoPercent.Fim">
+            <summary>
+            Percent no fim da pesquisa.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoPercent.InicioFim">
+            <summary>
+            Percent no início e fim da pesquisa.
+            </summary>
+        </member>
+        <member name="T:HzLibConnection.Sql.TipoOrdem">
+            <summary>
+            Tipo da ordenação do select.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoOrdem.Nenhuma">
+            <summary>
+            Não há ordem
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoOrdem.Ascendente">
+            <summary>
+            Ordem crescente
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.TipoOrdem.Descendente">
+            <summary>
+            Ordem decrescente.
+            </summary>
+        </member>
+        <member name="T:HzLibConnection.Sql.ListCampo">
+            <summary>
+            Classe com as características dos filtros para a montagem de uma instrução SQL.
+            Os tipos de campo OR devem ser os últimos a serem montados.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.ListCampo.mvarnomecampo">
+            <summary>
+            Nome do campo
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.ListCampo.mvartipocampo">
+            <summary>
+            Tipo do campo.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.ListCampo.mvarvalorcampo">
+            <summary>
+            Valor do campo.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.ListCampo.mvarordemcampo">
+            <summary>
+            Ordenação do select.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.ListCampo.mvarsinalpesquisa">
+            <summary>
+            Tipo do sinal da cláusula where do select.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.ListCampo.mvarTipoPercent">
+            <summary>
+            Caso seja percent.
+            </summary>
+        </member>
+        <member name="F:HzLibConnection.Sql.ListCampo.mvarTipoOrdem">
+            <summary>
+            Tipo da ordenação do select.
+            </summary>
+        </member>
+        <member name="M:HzLibConnection.Sql.ListCampo.#ctor">
+            <summary>
+            Construtor da classe ListCampo
+            Assume valor inicial do tipo do campo para String
+            </summary>
+        </member>
+        <member name="P:HzLibConnection.Sql.ListCampo.NomeCampo">
+            <summary>
+            Propriedade com o nome do campo a ser pesquisado na tabela
+            </summary>		
+        </member>
+        <member name="P:HzLibConnection.Sql.ListCampo.TipoCampo">
+            <summary>
+            Propriedade com o tipo do campo a ser pesquisado na tabela
+            </summary>		
+        </member>
+        <member name="P:HzLibConnection.Sql.ListCampo.ValorCampo">
+            <summary>
+            Propriedade se a pesquisa possuirá ordenação
+            </summary>		
+        </member>
+        <member name="P:HzLibConnection.Sql.ListCampo.OrdemCampo">
+            <summary>
+            Propriedade com o nome do campo de ordenação do Select
+            </summary>
+        </member>
+        <member name="P:HzLibConnection.Sql.ListCampo.Ordem">
+            <summary>
+            Propriedade do tipo da ordenação do select.
+            </summary>
+        </member>
+        <member name="P:HzLibConnection.Sql.ListCampo.Sinal">
+            <summary>
+            Properiedade com o sinal da pesquisa
+            </summary>
+        </member>
+        <member name="P:HzLibConnection.Sql.ListCampo.Percent">
+            <summary>
+            Properiedade com o posionamento do percent na pesquisa LIKE
+            </summary>
+        </member>
+        <member name="M:HzLibConnection.Sql.ListCampo.RetornaPercent(HzLibConnection.Sql.TipoPercent,HzLibConnection.Sql.ListCampo)">
+            <summary>
+            Retorna a string com os percents da cláusula LIKE
+            </summary>
+            <param name="oPercent">Posicionamento do percent</param>
+            <param name="oLC">Objeto com os campos do filtro</param>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Sql.ListCampo.RetornaSinal(HzLibConnection.Sql.SinalPesquisa)">
+            <summary>
+            Retorna uma string representando o sinal da pesquisa
+            </summary>
+            <param name="oSinal">Constante do sinal da pesquisa.</param>
+            <returns></returns>
+        </member>
+        <member name="M:HzLibConnection.Sql.ListCampo.RetornaSQL(System.String,HzLibConnection.Sql.ListCampos)">
+            <summary>
+            Monta a string de select no banco de dados
+            </summary>
+            <param name="sSelect">Instrução selectn no padrao select [campos] from [tabela]. Não pode conter a cláusula where, and, or, etc...</param>
+            <param name="oLS">Objeto com a coleção dos campos de filtro da pesquisa</param>
+            <returns>Retorna a string com a instrução SQL.</returns>
+        </member>
+        <member name="M:HzLibConnection.Sql.ListCampo.RetornaSQL(System.String,HzLibConnection.Sql.ListCampos,HzLibConnection.Sql.TipoOrdem,System.String)">
+            <summary>
+            Monta a string de select no banco de dados
+            </summary>
+            <param name="sSelect">Instrução selectn no padrao select [campos] from [tabela]. Não pode conter a cláusula where, and, or, etc...</param>
+            <param name="oLS">Objeto com a coleção dos campos de filtro da pesquisa</param>
+            <param name="oTipo">Tipo da ordenação do select</param>
+            <param name="sNomeCampo">Nome do campo a ser ordenado</param>
+            <returns>Retorna a string com a instrução SQL com order by.</returns>
+        </member>
+        <member name="T:HzLibConnection.Sql.ListCampos">
+            <summary>
+            Coleção com as caracterísitcas dos campos para a montagem
+            dinâmica de um Select
+            </summary>
+        </member>
+        <member name="M:HzLibConnection.Sql.ListCampos.Add(HzLibConnection.Sql.ListCampo)">
+            <summary>
+            Adiciona um item na coleção dos campos
+            </summary>
+            <param name="oItem">Nome do objeto da classe ListCampo</param>
+        </member>
+        <member name="M:HzLibConnection.Sql.ListCampos.Remove(System.Int32)">
+            <summary>
+            Remove um item da coleção dos campos
+            </summary>
+            <param name="index">Número do índice do item a ser removido</param>
+        </member>
+        <member name="P:HzLibConnection.Sql.ListCampos.Item(System.Int32)">
+            <summary>
+            Propriedade que retorna ou adiciona um campo na posição index desejada
+            </summary>
+        </member>
+    </members>
+</doc>
