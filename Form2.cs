@@ -154,6 +154,7 @@ namespace FemsaTools
                 if (reader != null)
                     reader.Close();
                 this.LogTask.Information(ex, ex.Message);
+                throw new Exception(ex.Message);
             }
         }
         #endregion
