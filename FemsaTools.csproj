@@ -37,20 +37,20 @@
   <ItemGroup>
     <Reference Include="AMSLib, Version=3.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\ace_49\AMSLib.dll</HintPath>
+      <HintPath>Lib\ace_49\AMSLib.dll</HintPath>
     </Reference>
     <Reference Include="HzBISCommands, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\ace_49\HzBISCommands.dll</HintPath>
+      <HintPath>Lib\ace_49\HzBISCommands.dll</HintPath>
     </Reference>
     <Reference Include="HzLibConnection">
-      <HintPath>..\Lib\ace_49\HzLibConnection.dll</HintPath>
+      <HintPath>Lib\ace_49\HzLibConnection.dll</HintPath>
     </Reference>
     <Reference Include="HzLibWindows">
-      <HintPath>..\Lib\ace_49\HzLibWindows.dll</HintPath>
+      <HintPath>Lib\ace_49\HzLibWindows.dll</HintPath>
     </Reference>
     <Reference Include="HzUtilClasses">
-      <HintPath>..\Lib\ace_49\HzUtilClasses.dll</HintPath>
+      <HintPath>Lib\ace_49\HzUtilClasses.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.1.1.1\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
@@ -186,7 +186,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="W32_ACEInterface, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Lib\ace_49\W32_ACEInterface.dll</HintPath>
+      <HintPath>Lib\ace_49\W32_ACEInterface.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
