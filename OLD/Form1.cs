@@ -1634,7 +1634,7 @@ namespace FemsaTools
                 //apenas crie o client
                 var client = new ExecutivaPortClient();
                 //e chame este método assíncrono com usuario, senha e o numero 3
-                var response = await client.getLiberacaoWithCredentials(@"webservice.femsabrasil", @"Executiva@femsab@3496", 3);
+                var response = await client.getLiberacaoWithCredentials(@"webservice.femsabrasil", @"T8yP@2jK$4r", 3);
                 var x = response.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S") && l.status_alocacao.Equals("S"); });
 
                 string sql = null;

@@ -16,6 +16,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -643,6 +644,202 @@ namespace FemsaTools
 
                 this.LogTask.Information("Rotina finalizada..");
             }
+        }
+
+        public string ChangeString(string str)
+        {
+            /** Troca os caracteres acentuados por não acentuados **/
+            string[] acentos = new string[] { "ç", "Ç", "á", "é", "í", "ó", "ú", "ý", "Á", "É", "Í", "Ó", "Ú", "Ý", "à", "è", "ì", "ò", "ù", "À", "È", "Ì", "Ò", "Ù", "ã", "õ", "ñ", "ä", "ë", "ï", "ö", "ü", "ÿ", "Ä", "Ë", "Ï", "Ö", "Ü", "Ã", "Õ", "Ñ", "â", "ê", "î", "ô", "û", "Â", "Ê", "Î", "Ô", "Û" };
+            string[] semAcento = new string[] { "c", "C", "a", "e", "i", "o", "u", "y", "A", "E", "I", "O", "U", "Y", "a", "e", "i", "o", "u", "A", "E", "I", "O", "U", "a", "o", "n", "a", "e", "i", "o", "u", "y", "A", "E", "I", "O", "U", "A", "O", "N", "a", "e", "i", "o", "u", "A", "E", "I", "O", "U" };
+
+            for (int i = 0; i < acentos.Length; i++)
+            {
+                str = str.Replace(acentos[i], semAcento[i]);
+            }
+            /** Troca os caracteres especiais da string por "" **/
+            string[] caracteresEspeciais = { "¹", "²", "³", "£", "¢", "¬", "º", "¨", "\"", "'", ".", ",", "-", ":", "(", ")", "ª", "|", "\\\\", "°", "_", "@", "#", "!", "$", "%", "&", "*", ";", "/", "<", ">", "?", "[", "]", "{", "}", "=", "+", "§", "´", "`", "^", "~" };
+
+            for (int i = 0; i < caracteresEspeciais.Length; i++)
+            {
+                str = str.Replace(caracteresEspeciais[i], "");
+            }
+
+            /** Troca os caracteres especiais da string por " " **/
+            str = Regex.Replace(str, @"[^\w\.@-]", " ",
+                                RegexOptions.None, TimeSpan.FromSeconds(1.5));
+
+            return str.Trim();
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            string x = ChangeString("raimundo nonato mendonça dutra");
+
+            StreamReader reader = new StreamReader(@"c:\temp\Bosch_26");
+            StreamWriter writer = new StreamWriter(@"c:\temp\CompWFMSAPBIS.csv");
+            try
+            {
+                string line = null;
+                BSPersonsInfoFEMSA personsFemsa = new BSPersonsInfoFEMSA();
+                List<BSPersonsInfoFEMSA> listFemsa = new List<BSPersonsInfoFEMSA>();
+                int currentline = 1;
+                string persno = null;
+                string nomeWFM = null;
+                string nomeSAP = null;
+                string reSAP = null;
+                string cardnoSAP = null;
+                string reBIS = null;
+                string nomeBIS = null;
+                string cardnoBIS = null;
+                string statusSAP = null;
+
+                this.Cursor = Cursors.WaitCursor;
+
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\CheckWFMBISSAP.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.ReadParameters();
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                this.LogTask.Information("Carregando a lista do SAP.");
+                while ((line = reader.ReadLine()) != null)
+                {
+                    string[] arr = line.Split('|');
+
+                    persno = arr[0].TrimStart(new Char[] { '0' });
+                    string nome = arr[1].Replace("'", "");
+                    string rg = arr[2]; //rg
+                    string cpf = arr[3]; //cpf
+                    string pispasep = arr[4]; //pispasep
+                    string sexo = arr[5];
+                    string deficiencia = arr[7];//deficiencia
+                    string cnpj = arr[8];//cnpj
+                    string codigoarea = arr[9];
+                    string descricaoarea = arr[10];
+                    string subgrupoempregado = arr[13];//departmattend
+                    string unidade = arr[15];//department
+                    string centrodecusto = arr[17];//costofcentre
+                    string codigocentrodecusto = arr[18];//activity
+                    string status = arr[19];//ativo ou 
+                    string grupoempregado = arr[20];//centraloffice
+                    string dataadmissao = arr[21];//dataadmissao
+                    string funcao = arr[22];//job
+                    string internoexterno = arr[23];//internoexterno
+                    string cardno = arr[24].TrimStart(new Char[] { '0' });
+                    string va = arr[25].ToLower().Equals("s") ? "1" : "0";//va
+                    string vt = arr[26].ToLower().Equals("s") ? "1" : "0";//vt
+                    string nomerecebedor = arr[28];//nomerecebedor
+
+                    personsFemsa = new BSPersonsInfoFEMSA()
+                    {
+                        PERSNO = persno,
+                        NOME = nome.Replace("'", "").ToLower(),
+                        RG = rg,
+                        CPF = cpf,
+                        PISPASEP = pispasep,
+                        SEX = sexo.ToLower().Equals("M") ? 0 : 1,
+                        DEFICIENCIA = deficiencia,
+                        CNPJ = cnpj.Replace(".", "").Replace("/", "").Replace("-", ""),
+                        DEPARTMATTEND = subgrupoempregado,
+                        DEPARTMENT = unidade,
+                        ACTIVITY = codigocentrodecusto,
+                        COSTCENTRE = centrodecusto,
+                        CENTRALOFFICE = grupoempregado,
+                        INTERNOEXTERNO = internoexterno,
+                        STATUSPROPRIO = status,
+                        VA = va,
+                        VT = vt,
+                        CARDNO = cardno,
+                        NOMERECEBEDOR = nomerecebedor,
+                        JOB = funcao,
+                        DATAADMISSAO = dataadmissao,
+                        CODIGOAREA = codigoarea,
+                        DESCRICAOAREA = descricaoarea
+                    };
+                    listFemsa.Add(personsFemsa);
+                }
+                reader.Close();
+                reader = null;
+
+                this.LogTask.Information(String.Format("Lista do SAP carregada com sucesso. Total: {0} registros", listFemsa.Count.ToString()));
+
+                writer.WriteLine("PERSID;PERSNO;NOME WFM;NOME SAP;CARDNO SAP;NOME BIS;CARDNO BIS;COMP. WFMxBIS;COMP. WFMxSAP;COMP. CARTAO;STATUS");
+
+                this.LogTask.Information("Pesquisando WFM.");
+                string sql = String.Format("select distinct data, be.re, be.nome, d30.cod_situacao, status, descricao_situacao, site, horario_ent, horario_sai from [10.153.68.133].sisqualwfm.[dbo].[BOSCH_EmpregadosSituacao_D+30] d30 " +
+                "inner join[10.153.68.133].sisqualwfm.dbo.BOSCH_Empregados be on be.re = d30.re inner join[10.153.68.133].sisqualwfm.dbo.BOSCH_TIPOS_SITUACAO bs on d30.COD_SITUACAO = bs.cod_situacao " +
+                "where convert(date, data, 103) = '{0}' and site not in ('JURUBATUBA', 'JURUBATUBA DIRETORIA', 'JURUBATUBA OPERAÇÕES')", DateTime.Now.ToString("MM/dd/yyyy"));
+
+                using (DataTable table = this.bisACEConnection.loadDataTable(sql))
+                {
+                    if (table.Rows.Count > 0)
+                    {
+                        this.LogTask.Information(String.Format("{0} registros encontrados.", table.Rows.Count.ToString()));
+                        foreach (DataRow row in table.Rows)
+                        {
+                            this.LogTask.Information("{0} de {1}. Pesquisando RE: {2}, Nome: {3}", (currentline++).ToString(), table.Rows.Count.ToString(), row["re"].ToString(), row["nome"].ToString());
+                            persno = row["re"].ToString();
+                            nomeWFM = row["nome"].ToString().ToLower();
+
+                            this.LogTask.Information("Pesquisando no SAP.");
+                            List<BSPersonsInfoFEMSA> lr = listFemsa.FindAll(delegate (BSPersonsInfoFEMSA sap) { return sap.PERSNO.Equals(persno); });
+                            if (lr != null && lr.Count > 0)
+                            {
+                                this.LogTask.Information("{0} registros encontrados no SAP.", lr.Count.ToString());
+                                reSAP = lr[0].PERSNO;
+                                nomeSAP = !String.IsNullOrEmpty(lr[0].NOME) ? lr[0].NOME.ToLower() : "SEM NOME";
+                                cardnoSAP = !String.IsNullOrEmpty(lr[0].CARDNO) ? lr[0].CARDNO : "SEM CARTAO";
+                                statusSAP = lr[0].STATUSPROPRIO;
+                            }
+                            else
+                            {
+                                nomeSAP = "";
+                                cardnoSAP = "";
+                                statusSAP = "";
+                                this.LogTask.Information("Nenhum registro encontrado no SAP.");
+                            }
+
+                            this.LogTask.Information("Pesquisando no BIS.");
+                            using (DataTable tableBIS = this.bisACEConnection.loadDataTable(String.Format("select per.persid, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), persno, cardno from bsuser.persons per " +
+                                " left outer join bsuser.cards cd on cd.persid = per.persid " +
+                                "where per.status = 1 and cd.status != 0 and persno = '{0}' and PERSCLASSID = 'FF0000E500000001'", persno)))
+                            {
+                                if (tableBIS != null && tableBIS.Rows.Count > 0)
+                                {
+                                    this.LogTask.Information("{0} registros encontrados no BIS.", tableBIS.Rows.Count.ToString());
+                                    foreach (DataRow rowBIS in tableBIS.Rows)
+                                    {
+                                        reBIS = rowBIS["persno"].ToString();
+                                        nomeBIS = !String.IsNullOrEmpty(rowBIS["nome"].ToString()) ? rowBIS["nome"].ToString().ToLower() : "SEM NOME";
+                                        cardnoBIS = !String.IsNullOrEmpty(rowBIS["cardno"].ToString()) ? rowBIS["cardno"].ToString().TrimStart(new Char[] { '0' }) : "SEM CARTAO";
+                                        writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10}", rowBIS["persid"].ToString(), persno, ChangeString(nomeWFM), ChangeString(nomeSAP), cardnoSAP, ChangeString(nomeBIS), cardnoBIS, ChangeString(nomeBIS).ToLower().Equals(ChangeString(nomeWFM).ToLower()), ChangeString(nomeSAP).ToLower().Equals(ChangeString(nomeWFM).ToLower()), cardnoBIS.Equals(cardnoSAP), statusSAP));
+                                    }
+                                }
+                                else
+                                {
+                                    nomeBIS = "";
+                                    cardnoBIS = "";
+                                    this.LogTask.Information("Nenhum registro encontrado no BIS.");
+                                    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10}", "NO PERSID", persno, ChangeString(nomeWFM), ChangeString(nomeSAP), cardnoSAP, ChangeString(nomeBIS), cardnoBIS, ChangeString(nomeBIS).ToLower().Equals((nomeWFM).ToLower()), ChangeString(nomeSAP).ToLower().Equals(nomeWFM.ToLower()), cardnoBIS.Equals(cardnoSAP), statusSAP));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.Cursor = Cursors.Default;
+                writer.Close();
+
+                this.LogTask.Information("Rotina finalizada..");
+            }
+
         }
     }
 }
