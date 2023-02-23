@@ -68,6 +68,7 @@ namespace FemsaTools
             this.rdbAccess = new System.Windows.Forms.RadioButton();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
             this.button7 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -76,6 +77,7 @@ namespace FemsaTools
             this.groupBox3.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -83,6 +85,7 @@ namespace FemsaTools
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -173,7 +176,6 @@ namespace FemsaTools
             // 
             // tabPage2
             // 
-            this.tabPage2.Controls.Add(this.button7);
             this.tabPage2.Controls.Add(this.groupBox3);
             this.tabPage2.Controls.Add(this.button2);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
@@ -431,13 +433,23 @@ namespace FemsaTools
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.button7);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Size = new System.Drawing.Size(768, 400);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "SG3";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
             // button7
             // 
-            this.button7.Location = new System.Drawing.Point(6, 193);
+            this.button7.Location = new System.Drawing.Point(13, 14);
             this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(121, 50);
-            this.button7.TabIndex = 11;
-            this.button7.Text = "Check WFM x BIS";
+            this.button7.Size = new System.Drawing.Size(121, 35);
+            this.button7.TabIndex = 10;
+            this.button7.Text = "Importar SG3";
             this.button7.UseVisualStyleBackColor = true;
             this.button7.Click += new System.EventHandler(this.button7_Click);
             // 
@@ -461,6 +473,7 @@ namespace FemsaTools
             this.tabPage3.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -506,6 +519,7 @@ namespace FemsaTools
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.TextBox txtREDivisao;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TabPage tabPage4;
         private System.Windows.Forms.Button button7;
     }
 }
