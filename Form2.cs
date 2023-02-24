@@ -736,5 +736,108 @@ namespace FemsaTools
                 this.LogTask.Information("Rotina finalizada..");
             }
         }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            StreamReader reader = null;
+            try
+            {
+                string line = null;
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\AddCompany.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.ReadParameters();
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                this.LogTask.Information("Lendo o arquivo com as empresas.");
+                if (openFileDialog1.ShowDialog() == DialogResult.Cancel) throw new Exception("Nenhum arquivo lido.");
+
+                this.Cursor = Cursors.WaitCursor;
+
+                this.LogTask.Information("Conectando com o BIS.");
+                if (!this.BISManager.Connect())
+                    throw new Exception("Erro ao conectar com o BIS.");
+
+                this.LogTask.Information("BIS conectado com sucesso!");
+
+
+                reader = new StreamReader(openFileDialog1.FileName);
+                while ((line = reader.ReadLine()) != null)
+                {
+                    string[] arr = line.Split(';');
+                    this.LogTask.Information(String.Format("CNPJ: {0}, Nome: {1}", arr[0], arr[1]));
+                    string id = BSSQLCompanies.GetID(this.bisACEConnection, arr[1]);
+                    if (String.IsNullOrEmpty(id))
+                    {
+                        this.LogTask.Information("Nova Empresa");
+                        ACECompanies cmp = new ACECompanies(this.BISManager.m_aceEngine);
+                        cmp.NAME = arr[1].ToUpper();
+                        cmp.COMPANYNO = arr[1].ToUpper();
+                        cmp.REMARKS = arr[0];
+                        if (cmp.Add() == API_RETURN_CODES_CS.API_SUCCESS_CS)
+                            this.LogTask.Information("Empresa gravada com sucesso.");
+                        else
+                            this.LogTask.Information("Erro ao gravar a empresa.");
+                    }
+                }
+
+                this.Cursor = Cursors.Default;
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+            }
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            StreamWriter writer = new StreamWriter(@"c:\temp\Persclassid.csv");
+
+            try
+            {
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\CheckWFMBIS.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.ReadParameters();
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                using (DataTable table = this.bisACEConnection.loadDataTable("select distinct re, nome from [10.153.68.133].sisqualwfm.dbo.BOSCH_Empregados be"))
+                {
+                    foreach(DataRow row in table.Rows)
+                    {
+                        using (DataTable tblBIS = this.bisACEConnection.loadDataTable(String.Format("select persid, persclass, persclassid from bsuser.persons where persno = '{0}' and persclassid != 'FF0000E500000001'", row["re"].ToString())))
+                        {
+                            foreach (DataRow r in tblBIS.Rows)
+                                this.bisACEConnection.executeProcedure(String.Format("update bsuser.persons set persclassid = 'FF0000E500000001' where persid = '{0}'", r["persid"].ToString()));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                writer.Close();
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information("Rotina finalizada..");
+            }
+        }
     }
 }
