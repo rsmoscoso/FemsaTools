@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 namespace SG3ServiceReference
 {
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.3")]
-    [System.ServiceModel.ServiceContractAttribute(Namespace = "https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index", ConfigurationName = "ServiceReference.ExecutivaPort")]
+    [System.ServiceModel.ServiceContractAttribute(Namespace = "https://sg3.executiva.adm.br/femsa/?r=webservice/soap/index", ConfigurationName = "ServiceReference.ExecutivaPort")]
     public interface ExecutivaPort
     {
 
-        [System.ServiceModel.OperationContractAttribute(Action = "https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index#getLiberacao", ReplyAction = "*")]
+        [System.ServiceModel.OperationContractAttribute(Action = "https://sg3.executiva.adm.br/femsa/?r=webservice/soap/index#getLiberacao", ReplyAction = "*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults = true)]
         System.Threading.Tasks.Task<SG3ServiceReference.getLiberacaoResponse> getLiberacaoAsync(SG3ServiceReference.getLiberacaoRequest request);
     }
@@ -21,7 +21,7 @@ namespace SG3ServiceReference
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.3")]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace = "https://sg3.executiva.adm.br/femsa/?r=webservice/soap/index")]
     public partial class Liberacao
     {
 
@@ -345,7 +345,7 @@ namespace SG3ServiceReference
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.3")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName = "getLiberacao", WrapperNamespace = "https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index", IsWrapped = true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName = "getLiberacao", WrapperNamespace = "https://sg3.executiva.adm.br/femsa/?r=webservice/soap/index", IsWrapped = true)]
     public partial class getLiberacaoRequest
     {
 
@@ -369,7 +369,7 @@ namespace SG3ServiceReference
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Tools.ServiceModel.Svcutil", "2.0.3")]
     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-    [System.ServiceModel.MessageContractAttribute(WrapperName = "getLiberacaoResponse", WrapperNamespace = "https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index", IsWrapped = true)]
+    [System.ServiceModel.MessageContractAttribute(WrapperName = "getLiberacaoResponse", WrapperNamespace = "https://sg3.executiva.adm.br/femsa/?r=webservice/soap/index", IsWrapped = true)]
     public partial class getLiberacaoResponse
     {
 
@@ -531,7 +531,7 @@ namespace SG3ServiceReference
         {
             if ((endpointConfiguration == EndpointConfiguration.ExecutivaPort))
             {
-                return new System.ServiceModel.EndpointAddress("https://sg3.executiva.adm.br/femsabrasil/?r=webservice/soap/index");
+                return new System.ServiceModel.EndpointAddress("https://sg3.executiva.adm.br/femsa/?r=webservice/soap/index");
             }
             throw new System.InvalidOperationException(string.Format("Não foi possível encontrar o ponto de extremidade com o nome \'{0}\'.", endpointConfiguration));
         }

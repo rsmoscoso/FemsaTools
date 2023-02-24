@@ -17,6 +17,8 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -554,8 +556,8 @@ namespace FemsaTools
                 this.ReadParameters();
                 this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
 
-                using (DataTable table = BSSQLClients.GetClients(this.bisACEConnection, "geral", "null"))
-                    Objetos.LoadCombo(cmbDivisao, table, "NAME", "CLIENTID", "NAME", true);
+                //using (DataTable table = BSSQLClients.GetClients(this.bisACEConnection, "geral", "null"))
+                //    Objetos.LoadCombo(cmbDivisao, table, "NAME", "CLIENTID", "NAME", true);
             }
             catch (Exception ex)
             {
@@ -653,70 +655,90 @@ namespace FemsaTools
             StreamWriter writer = new StreamWriter(@"c:\temp\SG3Found.csv");
             try
             {
-                this.Cursor = Cursors.WaitCursor;
+                HttpClient client = new HttpClient();
+                client.BaseAddress = new Uri("https://api2.executiva.adm.br/");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(
+                    new MediaTypeWithQualityHeaderValue("application/json"));
 
-                this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\ImportSG3.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
-                    .CreateLogger();
+                HttpResponseMessage responsep = await client.PostAsync("femsat1/vi/auth/login", "{\"username\": \"webservice.femsat1\",\"password\": \"T8yP@2jK$4r\"}");
 
-                this.ReadParameters();
-                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+                HttpResponseMessage response = await client.GetAsync("femsat1/v1/alocacao/liberada");
+                return;
 
-                this.LogTask.Information("Buscando os dados dos terceiros no SG3.");
-                //apenas crie o client
-                var client = new ExecutivaPortClient();
-                //e chame este método assíncrono com usuario, senha e o numero 3
-                var response = await client.getLiberacaoWithCredentials(@"webservice.femsabrasil", @"T8yP@2jK$4r", 3);
-                var x = response.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S") && l.status_alocacao.Equals("S"); });
 
-                this.LogTask.Information(String.Format("{0} registros encontrados.", x.Count.ToString()));
 
-                this.LogTask.Information("Conectando com o BIS.");
-                if (!this.BISManager.Connect())
-                    throw new Exception(String.Format("Erro ao conectar com o BIS: {0}", this.BISManager.GetErrorMessage()));
-                this.LogTask.Information("BIS conectado com sucesso.");
 
-                string sql = null;
-                string firstname = "";
-                string lastname = "";
-                writer.WriteLine("RG SG3;CPF SG3;Nome SG3;LIBERADO;PERSID;PERSNO;NOME;PERSCLASSID;ID");
-                int i = 0;
-                foreach (Liberacao l in x)
-                {
-                    BSCommon.ParseName(l.colaborador.Replace("'", ""), out firstname, out lastname);
 
-                    this.LogTask.Information(String.Format("{0} de {1}. RG: {2}, CPF: {3}, Nome: {4}", (i++).ToString(), x.Count.ToString(), l.rg, l.cpf, l.colaborador.Replace("'", "")));
 
-                    sql = String.Format("select persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), persclassid from bsuser.persons where status = 1 and persclass = 'E' and persno = '{0}'",
-                        l.cpf.Replace("'", ""));
-                    using (DataTable table = this.bisACEConnection.loadDataTable(sql))
-                    {
-                        if (table.Rows.Count > 0)
-                        {
-                            this.LogTask.Information(String.Format("{0} registros encontrados.", table.Rows.Count.ToString()));
-                            foreach (DataRow r in table.Rows)
-                            {
-                                writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7}", l.rg, l.cpf, l.colaborador, l.liberado, r["persid"].ToString(), r["persno"].ToString(), r["nome"].ToString(), r["persclassid"].ToString(), l.id_colaborador));
-                            }
-                        }
-                        else
-                        {
-                            this.LogTask.Information("Novo colaborador.");
-                            BSPersons per = new BSPersons(this.BISManager, this.bisACEConnection);
-                            per.PERSNO = l.cpf.Replace("'", "").Replace(".", "").Replace("-", "");
-                            per.FIRSTNAME = firstname;
-                            per.LASTNAME = lastname;
-                            per.GRADE = "SG3";
-                            per.PERSCLASSID = "0013B4437A2455E1";
-                            per.JOB = l.funcao.Replace("'", "");
-                            per.CENTRALOFFICE = l.empresa_terceira;
-                            if (per.Save() == BS_SAVE.SUCCESS)
-                                this.LogTask.Information("Colaborador gravado com sucess.");
-                            else
-                                this.LogTask.Information("Erro ao gravar o colaborador.");
-                        }
-                    }
-                }
+
+
+
+
+                //this.Cursor = Cursors.WaitCursor;
+
+                //this.LogTask = new LoggerConfiguration()
+                //    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\ImportSG3.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                //    .CreateLogger();
+
+                //this.ReadParameters();
+                //this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                //this.LogTask.Information("Buscando os dados dos terceiros no SG3.");
+                ////apenas crie o client
+                //var client = new ExecutivaPortClient();
+                ////e chame este método assíncrono com usuario, senha e o numero 3
+                //var response = await client.getLiberacaoWithCredentials(@"webservice.femsa", @"T8yP@2jK$4r", 3);
+                //var x = response.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S") && l.status_alocacao.Equals("S"); });
+
+                //this.LogTask.Information(String.Format("{0} registros encontrados.", x.Count.ToString()));
+
+                //this.LogTask.Information("Conectando com o BIS.");
+                //if (!this.BISManager.Connect())
+                //    throw new Exception(String.Format("Erro ao conectar com o BIS: {0}", this.BISManager.GetErrorMessage()));
+                //this.LogTask.Information("BIS conectado com sucesso.");
+
+                //string sql = null;
+                //string firstname = "";
+                //string lastname = "";
+                //writer.WriteLine("RG SG3;CPF SG3;Nome SG3;LIBERADO;PERSID;PERSNO;NOME;PERSCLASSID;ID");
+                //int i = 0;
+                //foreach (Liberacao l in x)
+                //{
+                //    BSCommon.ParseName(l.colaborador.Replace("'", ""), out firstname, out lastname);
+
+                //    this.LogTask.Information(String.Format("{0} de {1}. RG: {2}, CPF: {3}, Nome: {4}", (i++).ToString(), x.Count.ToString(), l.rg, l.cpf, l.colaborador.Replace("'", "")));
+
+                //    sql = String.Format("select persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), persclassid from bsuser.persons where status = 1 and persclass = 'E' and persno = '{0}'",
+                //        l.cpf.Replace("'", ""));
+                //    using (DataTable table = this.bisACEConnection.loadDataTable(sql))
+                //    {
+                //        if (table.Rows.Count > 0)
+                //        {
+                //            this.LogTask.Information(String.Format("{0} registros encontrados.", table.Rows.Count.ToString()));
+                //            foreach (DataRow r in table.Rows)
+                //            {
+                //                writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7}", l.rg, l.cpf, l.colaborador, l.liberado, r["persid"].ToString(), r["persno"].ToString(), r["nome"].ToString(), r["persclassid"].ToString(), l.id_colaborador));
+                //            }
+                //        }
+                //        else
+                //        {
+                //            this.LogTask.Information("Novo colaborador.");
+                //            BSPersons per = new BSPersons(this.BISManager, this.bisACEConnection);
+                //            per.PERSNO = l.cpf.Replace("'", "").Replace(".", "").Replace("-", "");
+                //            per.FIRSTNAME = firstname;
+                //            per.LASTNAME = lastname;
+                //            per.GRADE = "SG3";
+                //            per.PERSCLASSID = "0013B4437A2455E1";
+                //            per.JOB = l.funcao.Replace("'", "");
+                //            per.CENTRALOFFICE = l.empresa_terceira;
+                //            if (per.Save() == BS_SAVE.SUCCESS)
+                //                this.LogTask.Information("Colaborador gravado com sucess.");
+                //            else
+                //                this.LogTask.Information("Erro ao gravar o colaborador.");
+                //        }
+                //    }
+                //}
                 this.Cursor = Cursors.Default;
             }
             catch (Exception ex)
@@ -889,8 +911,16 @@ namespace FemsaTools
                             {
                                 using (DataTable tableCard = this.bisACEConnection.loadDataTable(String.Format("select cardid, cardno, sitecode = convert(int,convert(varbinary(4), CODEDATA)) from bsuser.cards where cardid = '{0}'", tableCD.Rows[0][0].ToString())))
                                 {
-                                    this.LogTask.Information(String.Format("{0};{1};{2};{3};{4};{5};{6}", nome, persno, persid, data, table.Rows[0][0].ToString(), tableCard.Rows[0]["cardno"].ToString(), tableCard.Rows[0]["sitecode"].ToString()));
-                                    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6}", nome, persno, persid, data, table.Rows[0][0].ToString(), tableCard.Rows[0]["cardno"].ToString(), tableCard.Rows[0]["sitecode"].ToString()));
+                                    if (tableCard.Rows.Count > 0)
+                                    {
+                                        this.LogTask.Information(String.Format("{0};{1};{2};{3};{4};{5};{6}", nome, persno, persid, data, tableCard.Rows[0]["cardid"].ToString(), tableCard.Rows[0]["cardno"].ToString(), tableCard.Rows[0]["sitecode"].ToString()));
+                                        writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6}", nome, persno, persid, data, table.Rows[0][0].ToString(), tableCard.Rows[0]["cardno"].ToString(), tableCard.Rows[0]["sitecode"].ToString()));
+                                    }
+                                    else
+                                    {
+                                        this.LogTask.Information(String.Format("{0};{1};{2};{3};{4};{5};{6}", nome, persno, persid, data, "naoencontrado", "naoencontrado", "naoencontrado"));
+                                        writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6}", nome, persno, persid, data, "naoencontrado", "naoencontrado", "naoencontrado"));
+                                    }
                                 }
                             }
                             else
