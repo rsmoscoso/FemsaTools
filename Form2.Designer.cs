@@ -39,6 +39,7 @@ namespace FemsaTools
             this.button1 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.button8 = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
             this.cmbDivisao = new System.Windows.Forms.ComboBox();
@@ -67,11 +68,11 @@ namespace FemsaTools
             this.rdbNotYet = new System.Windows.Forms.RadioButton();
             this.rdbAccess = new System.Windows.Forms.RadioButton();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.button9 = new System.Windows.Forms.Button();
             this.button7 = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.button8 = new System.Windows.Forms.Button();
-            this.button9 = new System.Windows.Forms.Button();
+            this.button10 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -88,11 +89,10 @@ namespace FemsaTools
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage4);
-            this.tabControl1.Location = new System.Drawing.Point(24, 23);
-            this.tabControl1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1552, 819);
+            this.tabControl1.Size = new System.Drawing.Size(776, 426);
             this.tabControl1.TabIndex = 8;
             // 
             // tabPage1
@@ -101,21 +101,19 @@ namespace FemsaTools
             this.tabPage1.Controls.Add(this.groupBox1);
             this.tabPage1.Controls.Add(this.button1);
             this.tabPage1.Controls.Add(this.button6);
-            this.tabPage1.Location = new System.Drawing.Point(8, 39);
-            this.tabPage1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(6, 6, 6, 6);
-            this.tabPage1.Size = new System.Drawing.Size(1536, 772);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPage1.Size = new System.Drawing.Size(768, 400);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Rotinas WFM";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(12, 169);
-            this.button3.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.button3.Location = new System.Drawing.Point(6, 88);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(242, 67);
+            this.button3.Size = new System.Drawing.Size(121, 35);
             this.button3.TabIndex = 11;
             this.button3.Text = "IMPORTACÃO PRÓPRIOS - LISTA";
             this.button3.UseVisualStyleBackColor = true;
@@ -126,21 +124,18 @@ namespace FemsaTools
             this.groupBox1.Controls.Add(this.btnExecute);
             this.groupBox1.Controls.Add(this.txtRE);
             this.groupBox1.Controls.Add(this.label1);
-            this.groupBox1.Location = new System.Drawing.Point(284, 12);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.groupBox1.Location = new System.Drawing.Point(142, 6);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(6, 6, 6, 6);
-            this.groupBox1.Size = new System.Drawing.Size(506, 146);
+            this.groupBox1.Size = new System.Drawing.Size(253, 76);
             this.groupBox1.TabIndex = 10;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "WFM Individual";
             // 
             // btnExecute
             // 
-            this.btnExecute.Location = new System.Drawing.Point(314, 33);
-            this.btnExecute.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.btnExecute.Location = new System.Drawing.Point(157, 17);
             this.btnExecute.Name = "btnExecute";
-            this.btnExecute.Size = new System.Drawing.Size(150, 44);
+            this.btnExecute.Size = new System.Drawing.Size(75, 23);
             this.btnExecute.TabIndex = 2;
             this.btnExecute.Text = "Executar";
             this.btnExecute.UseVisualStyleBackColor = true;
@@ -148,28 +143,25 @@ namespace FemsaTools
             // 
             // txtRE
             // 
-            this.txtRE.Location = new System.Drawing.Point(102, 37);
-            this.txtRE.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.txtRE.Location = new System.Drawing.Point(51, 19);
             this.txtRE.Name = "txtRE";
-            this.txtRE.Size = new System.Drawing.Size(196, 31);
+            this.txtRE.Size = new System.Drawing.Size(100, 20);
             this.txtRE.TabIndex = 1;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(40, 42);
-            this.label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label1.Location = new System.Drawing.Point(20, 22);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(47, 25);
+            this.label1.Size = new System.Drawing.Size(25, 13);
             this.label1.TabIndex = 0;
             this.label1.Text = "RE;";
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 90);
-            this.button1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.button1.Location = new System.Drawing.Point(6, 47);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(242, 67);
+            this.button1.Size = new System.Drawing.Size(121, 35);
             this.button1.TabIndex = 9;
             this.button1.Text = "EXCECÕES";
             this.button1.UseVisualStyleBackColor = true;
@@ -177,10 +169,9 @@ namespace FemsaTools
             // 
             // button6
             // 
-            this.button6.Location = new System.Drawing.Point(12, 12);
-            this.button6.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.button6.Location = new System.Drawing.Point(6, 6);
             this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(242, 67);
+            this.button6.Size = new System.Drawing.Size(121, 35);
             this.button6.TabIndex = 8;
             this.button6.Text = "BLOQUEIOS";
             this.button6.UseVisualStyleBackColor = true;
@@ -191,14 +182,23 @@ namespace FemsaTools
             this.tabPage2.Controls.Add(this.button8);
             this.tabPage2.Controls.Add(this.groupBox3);
             this.tabPage2.Controls.Add(this.button2);
-            this.tabPage2.Location = new System.Drawing.Point(8, 39);
-            this.tabPage2.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(6, 6, 6, 6);
-            this.tabPage2.Size = new System.Drawing.Size(1536, 772);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPage2.Size = new System.Drawing.Size(768, 400);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Administração";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // button8
+            // 
+            this.button8.Location = new System.Drawing.Point(133, 6);
+            this.button8.Name = "button8";
+            this.button8.Size = new System.Drawing.Size(121, 35);
+            this.button8.TabIndex = 11;
+            this.button8.Text = "Importar Empresas";
+            this.button8.UseVisualStyleBackColor = true;
+            this.button8.Click += new System.EventHandler(this.button8_Click);
             // 
             // groupBox3
             // 
@@ -207,11 +207,9 @@ namespace FemsaTools
             this.groupBox3.Controls.Add(this.button5);
             this.groupBox3.Controls.Add(this.txtREDivisao);
             this.groupBox3.Controls.Add(this.label3);
-            this.groupBox3.Location = new System.Drawing.Point(12, 90);
-            this.groupBox3.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.groupBox3.Location = new System.Drawing.Point(6, 47);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(6, 6, 6, 6);
-            this.groupBox3.Size = new System.Drawing.Size(532, 192);
+            this.groupBox3.Size = new System.Drawing.Size(266, 100);
             this.groupBox3.TabIndex = 10;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Alterar Divisão";
@@ -219,28 +217,25 @@ namespace FemsaTools
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(24, 42);
-            this.label4.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label4.Location = new System.Drawing.Point(12, 22);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(89, 25);
+            this.label4.Size = new System.Drawing.Size(45, 13);
             this.label4.TabIndex = 7;
             this.label4.Text = "Divisão:";
             // 
             // cmbDivisao
             // 
             this.cmbDivisao.FormattingEnabled = true;
-            this.cmbDivisao.Location = new System.Drawing.Point(158, 37);
-            this.cmbDivisao.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.cmbDivisao.Location = new System.Drawing.Point(79, 19);
             this.cmbDivisao.Name = "cmbDivisao";
-            this.cmbDivisao.Size = new System.Drawing.Size(358, 33);
+            this.cmbDivisao.Size = new System.Drawing.Size(181, 21);
             this.cmbDivisao.TabIndex = 6;
             // 
             // button5
             // 
-            this.button5.Location = new System.Drawing.Point(370, 104);
-            this.button5.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.button5.Location = new System.Drawing.Point(185, 54);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(150, 44);
+            this.button5.Size = new System.Drawing.Size(75, 23);
             this.button5.TabIndex = 5;
             this.button5.Text = "Executar";
             this.button5.UseVisualStyleBackColor = true;
@@ -248,28 +243,25 @@ namespace FemsaTools
             // 
             // txtREDivisao
             // 
-            this.txtREDivisao.Location = new System.Drawing.Point(158, 108);
-            this.txtREDivisao.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.txtREDivisao.Location = new System.Drawing.Point(79, 56);
             this.txtREDivisao.Name = "txtREDivisao";
-            this.txtREDivisao.Size = new System.Drawing.Size(196, 31);
+            this.txtREDivisao.Size = new System.Drawing.Size(100, 20);
             this.txtREDivisao.TabIndex = 4;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(24, 113);
-            this.label3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label3.Location = new System.Drawing.Point(12, 59);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(47, 25);
+            this.label3.Size = new System.Drawing.Size(25, 13);
             this.label3.TabIndex = 3;
             this.label3.Text = "RE;";
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(12, 12);
-            this.button2.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.button2.Location = new System.Drawing.Point(6, 6);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(242, 67);
+            this.button2.Size = new System.Drawing.Size(121, 35);
             this.button2.TabIndex = 9;
             this.button2.Text = "Adicionar Autorizações";
             this.button2.UseVisualStyleBackColor = true;
@@ -279,10 +271,9 @@ namespace FemsaTools
             // 
             this.tabPage3.Controls.Add(this.lstData);
             this.tabPage3.Controls.Add(this.groupBox2);
-            this.tabPage3.Location = new System.Drawing.Point(8, 39);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(1536, 772);
+            this.tabPage3.Size = new System.Drawing.Size(768, 400);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Troubleshooting";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -299,10 +290,9 @@ namespace FemsaTools
             this.Local,
             this.Mensagem});
             this.lstData.HideSelection = false;
-            this.lstData.Location = new System.Drawing.Point(24, 252);
-            this.lstData.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.lstData.Location = new System.Drawing.Point(12, 131);
             this.lstData.Name = "lstData";
-            this.lstData.Size = new System.Drawing.Size(1478, 483);
+            this.lstData.Size = new System.Drawing.Size(741, 253);
             this.lstData.TabIndex = 11;
             this.lstData.UseCompatibleStateImageBehavior = false;
             // 
@@ -358,21 +348,18 @@ namespace FemsaTools
             this.groupBox2.Controls.Add(this.rdbAuthorized);
             this.groupBox2.Controls.Add(this.rdbNotYet);
             this.groupBox2.Controls.Add(this.rdbAccess);
-            this.groupBox2.Location = new System.Drawing.Point(24, 27);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.groupBox2.Location = new System.Drawing.Point(12, 14);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(6, 6, 6, 6);
-            this.groupBox2.Size = new System.Drawing.Size(1048, 192);
+            this.groupBox2.Size = new System.Drawing.Size(524, 100);
             this.groupBox2.TabIndex = 10;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Verificar INFO";
             // 
             // btnExport
             // 
-            this.btnExport.Location = new System.Drawing.Point(514, 81);
-            this.btnExport.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.btnExport.Location = new System.Drawing.Point(257, 42);
             this.btnExport.Name = "btnExport";
-            this.btnExport.Size = new System.Drawing.Size(214, 54);
+            this.btnExport.Size = new System.Drawing.Size(107, 28);
             this.btnExport.TabIndex = 11;
             this.btnExport.Text = "Exportar";
             this.btnExport.UseVisualStyleBackColor = true;
@@ -381,10 +368,9 @@ namespace FemsaTools
             // 
             // pgBar
             // 
-            this.pgBar.Location = new System.Drawing.Point(12, 140);
-            this.pgBar.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.pgBar.Location = new System.Drawing.Point(6, 73);
             this.pgBar.Name = "pgBar";
-            this.pgBar.Size = new System.Drawing.Size(1024, 44);
+            this.pgBar.Size = new System.Drawing.Size(512, 23);
             this.pgBar.Step = 1;
             this.pgBar.TabIndex = 10;
             this.pgBar.Visible = false;
@@ -393,10 +379,9 @@ namespace FemsaTools
             // 
             this.rdbAll.AutoSize = true;
             this.rdbAll.Checked = true;
-            this.rdbAll.Location = new System.Drawing.Point(496, 37);
-            this.rdbAll.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.rdbAll.Location = new System.Drawing.Point(248, 19);
             this.rdbAll.Name = "rdbAll";
-            this.rdbAll.Size = new System.Drawing.Size(103, 29);
+            this.rdbAll.Size = new System.Drawing.Size(55, 17);
             this.rdbAll.TabIndex = 5;
             this.rdbAll.TabStop = true;
             this.rdbAll.Text = "Todos";
@@ -404,10 +389,9 @@ namespace FemsaTools
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(288, 81);
-            this.button4.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.button4.Location = new System.Drawing.Point(144, 42);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(214, 54);
+            this.button4.Size = new System.Drawing.Size(107, 28);
             this.button4.TabIndex = 9;
             this.button4.Text = "Executar";
             this.button4.UseVisualStyleBackColor = true;
@@ -415,29 +399,26 @@ namespace FemsaTools
             // 
             // txtREInfo
             // 
-            this.txtREInfo.Location = new System.Drawing.Point(76, 90);
-            this.txtREInfo.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.txtREInfo.Location = new System.Drawing.Point(38, 47);
             this.txtREInfo.Name = "txtREInfo";
-            this.txtREInfo.Size = new System.Drawing.Size(196, 31);
+            this.txtREInfo.Size = new System.Drawing.Size(100, 20);
             this.txtREInfo.TabIndex = 4;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(14, 96);
-            this.label2.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.label2.Location = new System.Drawing.Point(7, 50);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(47, 25);
+            this.label2.Size = new System.Drawing.Size(25, 13);
             this.label2.TabIndex = 3;
             this.label2.Text = "RE;";
             // 
             // rdbAuthorized
             // 
             this.rdbAuthorized.AutoSize = true;
-            this.rdbAuthorized.Location = new System.Drawing.Point(288, 37);
-            this.rdbAuthorized.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.rdbAuthorized.Location = new System.Drawing.Point(144, 19);
             this.rdbAuthorized.Name = "rdbAuthorized";
-            this.rdbAuthorized.Size = new System.Drawing.Size(191, 29);
+            this.rdbAuthorized.Size = new System.Drawing.Size(98, 17);
             this.rdbAuthorized.TabIndex = 2;
             this.rdbAuthorized.Text = "Não Autorizado";
             this.rdbAuthorized.UseVisualStyleBackColor = true;
@@ -445,10 +426,9 @@ namespace FemsaTools
             // rdbNotYet
             // 
             this.rdbNotYet.AutoSize = true;
-            this.rdbNotYet.Location = new System.Drawing.Point(144, 37);
-            this.rdbNotYet.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.rdbNotYet.Location = new System.Drawing.Point(72, 19);
             this.rdbNotYet.Name = "rdbNotYet";
-            this.rdbNotYet.Size = new System.Drawing.Size(128, 29);
+            this.rdbNotYet.Size = new System.Drawing.Size(66, 17);
             this.rdbNotYet.TabIndex = 1;
             this.rdbNotYet.Text = "Expirado";
             this.rdbNotYet.UseVisualStyleBackColor = true;
@@ -456,32 +436,40 @@ namespace FemsaTools
             // rdbAccess
             // 
             this.rdbAccess.AutoSize = true;
-            this.rdbAccess.Location = new System.Drawing.Point(12, 37);
-            this.rdbAccess.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.rdbAccess.Location = new System.Drawing.Point(6, 19);
             this.rdbAccess.Name = "rdbAccess";
-            this.rdbAccess.Size = new System.Drawing.Size(114, 29);
+            this.rdbAccess.Size = new System.Drawing.Size(60, 17);
             this.rdbAccess.TabIndex = 0;
             this.rdbAccess.Text = "Acesso";
             this.rdbAccess.UseVisualStyleBackColor = true;
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.button10);
             this.tabPage4.Controls.Add(this.button9);
             this.tabPage4.Controls.Add(this.button7);
-            this.tabPage4.Location = new System.Drawing.Point(8, 39);
-            this.tabPage4.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(1536, 772);
+            this.tabPage4.Size = new System.Drawing.Size(768, 400);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "SG3";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
+            // button9
+            // 
+            this.button9.Location = new System.Drawing.Point(147, 14);
+            this.button9.Name = "button9";
+            this.button9.Size = new System.Drawing.Size(121, 35);
+            this.button9.TabIndex = 11;
+            this.button9.Text = "Check WFM x SG3";
+            this.button9.UseVisualStyleBackColor = true;
+            this.button9.Click += new System.EventHandler(this.button9_Click);
+            // 
             // button7
             // 
-            this.button7.Location = new System.Drawing.Point(26, 27);
-            this.button7.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.button7.Location = new System.Drawing.Point(13, 14);
             this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(242, 67);
+            this.button7.Size = new System.Drawing.Size(121, 35);
             this.button7.TabIndex = 10;
             this.button7.Text = "Importar SG3";
             this.button7.UseVisualStyleBackColor = true;
@@ -491,35 +479,22 @@ namespace FemsaTools
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // button8
+            // button10
             // 
-            this.button8.Location = new System.Drawing.Point(266, 11);
-            this.button8.Margin = new System.Windows.Forms.Padding(6);
-            this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(242, 67);
-            this.button8.TabIndex = 11;
-            this.button8.Text = "Importar Empresas";
-            this.button8.UseVisualStyleBackColor = true;
-            this.button8.Click += new System.EventHandler(this.button8_Click);
-            // 
-            // button9
-            // 
-            this.button9.Location = new System.Drawing.Point(294, 27);
-            this.button9.Margin = new System.Windows.Forms.Padding(6);
-            this.button9.Name = "button9";
-            this.button9.Size = new System.Drawing.Size(242, 67);
-            this.button9.TabIndex = 11;
-            this.button9.Text = "Check WFM x SG3";
-            this.button9.UseVisualStyleBackColor = true;
-            this.button9.Click += new System.EventHandler(this.button9_Click);
+            this.button10.Location = new System.Drawing.Point(283, 14);
+            this.button10.Name = "button10";
+            this.button10.Size = new System.Drawing.Size(121, 35);
+            this.button10.TabIndex = 12;
+            this.button10.Text = "Check SG3 Last Card";
+            this.button10.UseVisualStyleBackColor = true;
+            this.button10.Click += new System.EventHandler(this.button10_Click);
             // 
             // Form2
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1600, 865);
+            this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.tabControl1);
-            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.Name = "Form2";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Administração BIS";
@@ -584,5 +559,6 @@ namespace FemsaTools
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.Button button8;
         private System.Windows.Forms.Button button9;
+        private System.Windows.Forms.Button button10;
     }
 }

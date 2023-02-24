@@ -839,5 +839,84 @@ namespace FemsaTools
                 this.LogTask.Information("Rotina finalizada..");
             }
         }
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+            StreamWriter writer = new StreamWriter(@"c:\temp\CardID_SG3.csv");
+            try
+            {
+                this.Cursor = Cursors.WaitCursor;
+
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\CheckLastUsedCardSG3.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.ReadParameters();
+                this.bisConnection = new HzConexao(this.BISSQL.SQLHost, this.BISSQL.SQLUser, this.BISSQL.SQLPwd, "BISEventLog", "System.Data.SqlClient");
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                int currentline = 1;
+                writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6}", "persid", "re", "nome", "data", "cardid", "cardno", "sitecode"));
+                using (DataTable table = this.bisACEConnection.loadDataTable(String.Format("select per.persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), accesstime from bsuser.persons per " +
+                    "left outer join bsuser.CURRENTACCESSSTATE cur on cur.persid = per.persid where per.status = 1 and persclass = 'E' and persclassid != 'FF0000E500000001'")))
+                {
+                    this.LogTask.Information(String.Format("{0} registros encontrados.", table.Rows.Count.ToString()));
+                    foreach (DataRow row in table.Rows)
+                    {
+                        this.LogTask.Information("{0} de {1}. Pesquisando PERSID: {2}, RE: {3}, Nome: {4}", (currentline++).ToString(), table.Rows.Count.ToString(), row["persid"].ToString(), row["persno"].ToString(), row["nome"].ToString());
+                        string persid = row["persid"].ToString();
+                        string persno = row["persno"].ToString();
+                        string nome = row["nome"].ToString();
+                        string data = row["accesstime"].ToString();
+                        if (String.IsNullOrEmpty(data))
+                        {
+                            this.LogTask.Information("Nao ha data de ultimo acesso.");
+                            writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6}", nome, persno, persid, "naoencontrado", "naoencontrado", "naoencontrado", "naoencontrado"));
+                            continue;
+                        }
+                        else if (!String.IsNullOrEmpty(data) && DateTime.Parse(data).Subtract(DateTime.Parse("01/01/2023")).Days < 0)
+                        {
+                            this.LogTask.Information("Data Inferior a janeiro de 2023.");
+                            writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6}", nome, persno, persid, data, "inferior0123", "inferior0123", "inferior0123"));
+                            continue;
+                        }
+
+                        this.LogTask.Information(String.Format("Verificando Nome: {0}, RE: {1}, PERSID: {2}", nome, persno, persid));
+
+                        using (DataTable tableCD = this.bisConnection.loadDataTable(String.Format("set dateformat 'dmy' exec spLastUsedCardID_PERSID '{0}'", persid)))
+                        {
+                            if (tableCD.Rows.Count > 0)
+                            {
+                                using (DataTable tableCard = this.bisACEConnection.loadDataTable(String.Format("select cardid, cardno, sitecode = convert(int,convert(varbinary(4), CODEDATA)) from bsuser.cards where cardid = '{0}'", tableCD.Rows[0][0].ToString())))
+                                {
+                                    this.LogTask.Information(String.Format("{0};{1};{2};{3};{4};{5};{6}", nome, persno, persid, data, table.Rows[0][0].ToString(), tableCard.Rows[0]["cardno"].ToString(), tableCard.Rows[0]["sitecode"].ToString()));
+                                    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6}", nome, persno, persid, data, table.Rows[0][0].ToString(), tableCard.Rows[0]["cardno"].ToString(), tableCard.Rows[0]["sitecode"].ToString()));
+                                }
+                            }
+                            else
+                            {
+                                this.LogTask.Information("PERSID nao encontrado.");
+                                writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5}", nome, persno, persid, "naoencontrado", "naoencontrado", "naoencontrado", "naoencontrado"));
+                            }
+                        }
+                    }
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.Cursor = Cursors.Default;
+
+                writer.Close();
+
+                this.LogTask.Information("Rotina finalizada..");
+            }
+
+        }
     }
 }
