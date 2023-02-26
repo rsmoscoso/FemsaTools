@@ -8,7 +8,6 @@ using HzLibConnection.Data;
 using HzUtilClasses.Threading;
 using Newtonsoft.Json;
 using Serilog;
-using SG3ServiceReference;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -1615,70 +1614,6 @@ namespace FemsaTools
 
         private async void button15_ClickAsync(object sender, EventArgs e)
         {
-            StreamWriter writer = new StreamWriter(@"c:\temp\liberacao.csv");
-            try
-            {
-                this.Cursor = Cursors.WaitCursor;
-
-                this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3Check.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
-                    .CreateLogger();
-
-
-                this.ReadParameters();
-                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
-
-                CultureInfo ptBR = new CultureInfo("pt-BR", true);
-
-                this.LogTask.Information("Verificando o SG3.");
-                //apenas crie o client
-                var client = new ExecutivaPortClient();
-                //e chame este método assíncrono com usuario, senha e o numero 3
-                var response = await client.getLiberacaoWithCredentials(@"webservice.femsabrasil", @"T8yP@2jK$4r", 3);
-                var x = response.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S") && l.status_alocacao.Equals("S"); });
-
-                string sql = null;
-                string firstname = "";
-                string lastname = "";
-                writer.WriteLine("RG SG3;CPF SG3;Nome SG3;LIBERADO;PERSID;PERSNO;NOME;PERSCLASSID;ID");
-                int i = 0;
-                foreach (Liberacao l in x)
-                {
-                    ++i;
-
-                    BSCommon.ParseName(l.colaborador.Replace("'", ""), out firstname, out lastname);
-
-                    this.LogTask.Information(String.Format("{0} de {1}. RG: {2}, CPF: {3}, Nome: {4}", (i++).ToString(), x.Count.ToString(), l.rg, l.cpf, l.colaborador.Replace("'", "")));
-
-                    sql = String.Format("select persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), persclassid from bsuser.persons where status = 1 and persclass = 'E' and (persno = '{0}' or persno = '{1}')",
-                        l.rg.Replace("'", ""), l.cpf.Replace("'", ""), firstname, lastname);
-                    using (DataTable table = this.bisACEConnection.loadDataTable(sql))
-                    {
-                        if (table.Rows.Count > 0)
-                        {
-                            this.LogTask.Information(String.Format("{0} registros encontrados.", table.Rows.Count.ToString()));
-                            foreach (DataRow r in table.Rows)
-                            {
-                                writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7}", l.rg, l.cpf, l.colaborador, l.liberado, r["persid"].ToString(), r["persno"].ToString(), r["nome"].ToString(), r["persclassid"].ToString(), l.id_colaborador));
-                            }
-                        }
-                        else
-                            writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7}", l.rg, l.cpf, l.colaborador, l.liberado, "sempersid", "sempersno", "semnome", "sempersclassid", l.id_colaborador));
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
-            }
-            finally
-            {
-                this.Cursor = Cursors.Default;
-
-                writer.Close();
-
-                this.LogTask.Information("Rotina finalizada..");
-            }
         }
 
         private void button16_Click(object sender, EventArgs e)

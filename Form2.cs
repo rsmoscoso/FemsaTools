@@ -3,12 +3,12 @@ using AMSLib.ACE;
 using AMSLib.Common;
 using AMSLib.Manager;
 using AMSLib.SQL;
+using FemsaTools.SG3;
 using HzBISCommands;
 using HzLibConnection.Data;
 using HzLibWindows.Common;
 using Newtonsoft.Json;
 using Serilog;
-using SG3ServiceReference;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,6 +19,8 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.NetworkInformation;
+using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -39,6 +41,10 @@ namespace FemsaTools
         /// </summary>
         public ILogger LogTaskSolo { get; set; }
         /// <summary>
+        /// Log das tarefas da importacao do SG3.
+        /// </summary>
+        public ILogger LogSG3Task { get; set; }
+        /// <summary>
         /// Resultado dos bloqueios/desbloqueios.
         /// </summary>
         public ILogger LogResult { get; set; }
@@ -46,6 +52,10 @@ namespace FemsaTools
         /// Resultado dos bloqueios/desbloqueios.
         /// </summary>
         public ILogger LogResultSolo { get; set; }
+        /// <summary>
+        /// Resultado da da importacao do SG3..
+        /// </summary>
+        public ILogger LogSG3Result { get; set; }
         /// <summary>
         /// Log das tarefas de importação.
         /// </summary>
@@ -74,11 +84,18 @@ namespace FemsaTools
         /// Conexão com o banco de dados do BIS.
         /// </summary>
         public HzConexao bisACEConnection { get; set; }
+        /// <summary>
+        /// Conexão com o banco de dados de Eventos do BIS.
+        /// </summary>
         public HzConexao bisConnection { get; set; }
         /// <summary>
         /// Dados para o compartilhamento do arquivo de importação.
         /// </summary>
         private FemsaNetworkCredential femsaCredential { get; set; }
+        /// <summary>
+        /// Lista dos hosts do SG3.
+        /// </summary>
+        private List<SG3Host> SG3Hosts { get; set; }
 
         #endregion
 
@@ -128,6 +145,30 @@ namespace FemsaTools
                 this.BISSQL = JsonConvert.DeserializeObject<SQLParameters>(sql);
                 this.LogTask.Information(String.Format("SQL BIS --> Host: {0}, User: {1}, Pwd: {2}", this.BISSQL.SQLHost,
                     this.BISSQL.SQLUser, this.BISSQL.SQLPwd));
+
+                //this.SG3Hosts = new List<SG3Host>();
+                //this.SG3Hosts.Add(new SG3Host() { Host = "http://api2.executiva.adm.br", Command = "femsabrasil/v1/alocacao/liberada", Username = "webservice.femsabrasil", Password = "T8yP@2jK$4r" });
+                //this.SG3Hosts.Add(new SG3Host() { Host = "http://api2.executiva.adm.br", Command = "femsat1/v1/alocacao/liberada", Username = "webservice.femsat1", Password = "T8yP@2jK$4r" });
+                //this.SG3Hosts.Add(new SG3Host() { Host = "http://api2.executiva.adm.br", Command = "femsa/v1/alocacao/liberada", Username = "webservice.femsa", Password = "T8yP@2jK$4r" });
+
+                //StreamWriter writer = new StreamWriter(@"c:\horizon\config\sg3.json");
+                //writer.WriteLine(JsonConvert.SerializeObject(this.SG3Hosts));
+                //writer.Close();
+
+                this.LogTask.Information("Lendo SG3...");
+                reader = new StreamReader(@"c:\horizon\config\sg3.json");
+                sql = reader.ReadToEnd();
+                reader.Close();
+
+                if (String.IsNullOrEmpty(sql))
+                    throw new Exception("Nao ha arquivo de configuracao do SG3.");
+
+                this.SG3Hosts = JsonConvert.DeserializeObject<List<SG3Host>>(sql);
+                foreach(SG3Host host in this.SG3Hosts)
+                {
+                    this.LogTask.Information(String.Format("SG3 --> Host: {0}, Username: {1}, Password: {2}", host.Host,
+                        host.Username, host.Password));
+                }
 
                 //this.LogTask.Information("Lendo Arquivo de compartilhamento...");
                 //reader = new StreamReader(@"c:\horizon\config\credential.json");
@@ -652,93 +693,48 @@ namespace FemsaTools
 
         private async void button7_Click(object sender, EventArgs e)
         {
-            StreamWriter writer = new StreamWriter(@"c:\temp\SG3Found.csv");
             try
             {
-                HttpClient client = new HttpClient();
-                client.BaseAddress = new Uri("https://api2.executiva.adm.br/");
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/json"));
+                this.LogSG3Task = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\BlockSG3TaskLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
 
-                HttpResponseMessage responsep = await client.PostAsync("femsat1/vi/auth/login", "{\"username\": \"webservice.femsat1\",\"password\": \"T8yP@2jK$4r\"}");
+                this.LogSG3Result = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\BlockSG3TaskLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
 
-                HttpResponseMessage response = await client.GetAsync("femsat1/v1/alocacao/liberada");
-                return;
+                SG3Import import = new SG3Import(this.LogSG3Task, this.LogSG3Result, this.BISACESQL, this.BISSQL, this.BISManager);
+                foreach (SG3Host host in this.SG3Hosts)
+                {
+                    User user = new User() { username = host.Username, password = host.Password };
+                    using (var client = new HttpClient())
+                    {
+                        //client.BaseAddress = new Uri(host.Host);
+                        HttpResponseMessage message = await client.PostAsync(host.Host + host.LoginCommand, new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
+                        string response = await message.Content.ReadAsStringAsync();
+                        user = (User)JsonConvert.DeserializeObject<User>(response);
 
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.token);
 
+                        // Send the POST request
+                        var rp = await client.PostAsync("http://api2.executiva.adm.br/femsabrasil/v1/alocacao/liberada", new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
 
+                        // Read the response content as a string
+                        var responseContent = await rp.Content.ReadAsStringAsync();
 
+                        ////clientLib.BaseAddress = new Uri("http://api2.executiva.adm.br");
+                        //using (var request = new HttpRequestMessage(HttpMethod.Post, "http://api2.executiva.adm.br" + host.Command))
+                        //{
+                        //    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", user.token);
+                        //    var responseget = await client.SendAsync(request);
+                        //    string responsestr = await responseget.Content.ReadAsStringAsync();
+                        //    var liberacao = JsonConvert.DeserializeObject<List<Liberacao>>(responsestr);
+                        //    var x = liberacao.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S") && l.status_alocacao.Equals("S"); });
+                        //    import.Import(x);
+                        //}
+                    }
+                }
 
-
-
-
-
-
-                //this.Cursor = Cursors.WaitCursor;
-
-                //this.LogTask = new LoggerConfiguration()
-                //    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\ImportSG3.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
-                //    .CreateLogger();
-
-                //this.ReadParameters();
-                //this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
-
-                //this.LogTask.Information("Buscando os dados dos terceiros no SG3.");
-                ////apenas crie o client
-                //var client = new ExecutivaPortClient();
-                ////e chame este método assíncrono com usuario, senha e o numero 3
-                //var response = await client.getLiberacaoWithCredentials(@"webservice.femsa", @"T8yP@2jK$4r", 3);
-                //var x = response.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S") && l.status_alocacao.Equals("S"); });
-
-                //this.LogTask.Information(String.Format("{0} registros encontrados.", x.Count.ToString()));
-
-                //this.LogTask.Information("Conectando com o BIS.");
-                //if (!this.BISManager.Connect())
-                //    throw new Exception(String.Format("Erro ao conectar com o BIS: {0}", this.BISManager.GetErrorMessage()));
-                //this.LogTask.Information("BIS conectado com sucesso.");
-
-                //string sql = null;
-                //string firstname = "";
-                //string lastname = "";
-                //writer.WriteLine("RG SG3;CPF SG3;Nome SG3;LIBERADO;PERSID;PERSNO;NOME;PERSCLASSID;ID");
-                //int i = 0;
-                //foreach (Liberacao l in x)
-                //{
-                //    BSCommon.ParseName(l.colaborador.Replace("'", ""), out firstname, out lastname);
-
-                //    this.LogTask.Information(String.Format("{0} de {1}. RG: {2}, CPF: {3}, Nome: {4}", (i++).ToString(), x.Count.ToString(), l.rg, l.cpf, l.colaborador.Replace("'", "")));
-
-                //    sql = String.Format("select persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), persclassid from bsuser.persons where status = 1 and persclass = 'E' and persno = '{0}'",
-                //        l.cpf.Replace("'", ""));
-                //    using (DataTable table = this.bisACEConnection.loadDataTable(sql))
-                //    {
-                //        if (table.Rows.Count > 0)
-                //        {
-                //            this.LogTask.Information(String.Format("{0} registros encontrados.", table.Rows.Count.ToString()));
-                //            foreach (DataRow r in table.Rows)
-                //            {
-                //                writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7}", l.rg, l.cpf, l.colaborador, l.liberado, r["persid"].ToString(), r["persno"].ToString(), r["nome"].ToString(), r["persclassid"].ToString(), l.id_colaborador));
-                //            }
-                //        }
-                //        else
-                //        {
-                //            this.LogTask.Information("Novo colaborador.");
-                //            BSPersons per = new BSPersons(this.BISManager, this.bisACEConnection);
-                //            per.PERSNO = l.cpf.Replace("'", "").Replace(".", "").Replace("-", "");
-                //            per.FIRSTNAME = firstname;
-                //            per.LASTNAME = lastname;
-                //            per.GRADE = "SG3";
-                //            per.PERSCLASSID = "0013B4437A2455E1";
-                //            per.JOB = l.funcao.Replace("'", "");
-                //            per.CENTRALOFFICE = l.empresa_terceira;
-                //            if (per.Save() == BS_SAVE.SUCCESS)
-                //                this.LogTask.Information("Colaborador gravado com sucess.");
-                //            else
-                //                this.LogTask.Information("Erro ao gravar o colaborador.");
-                //        }
-                //    }
-                //}
                 this.Cursor = Cursors.Default;
             }
             catch (Exception ex)

@@ -212,7 +212,10 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RECard.cs" />
-    <Compile Include="SG3.cs" />
+    <Compile Include="SG3\SG3Host.cs" />
+    <Compile Include="SG3\Liberacao.cs" />
+    <Compile Include="SG3\SG3Import.cs" />
+    <Compile Include="SG3\User.cs" />
     <EmbeddedResource Include="Form2.resx">
       <DependentUpon>Form2.cs</DependentUpon>
     </EmbeddedResource>
@@ -238,7 +241,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="sg3.wsdl" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="../Lib/ace_49/*">

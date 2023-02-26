@@ -6,7 +6,6 @@ using AMSLib.SQL;
 using HzBISCommands;
 using HzLibConnection.Data;
 using Serilog;
-using SG3ServiceReference;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -1216,105 +1215,6 @@ namespace FemsaTools
                         reStatus = RE_STATUS.DELETE;
                         femsaInfo.Add(new FemsaInfo() { Persno = personsSG3.PERSNO, Nome = personsSG3.NOME, Status = reStatus });
                     }
-
-                    ++total;
-                }
-            }
-            catch (Exception ex)
-            {
-                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
-                this.sendErrorMail(this.bisConnection, ex.Message);
-            }
-            finally
-            {
-                this.LogTask.Information("Descontecando o BIS.");
-                if (this.bisManager.Disconnect())
-                    this.LogTask.Information("BIS desconectado com sucesso.");
-                else
-                    this.LogTask.Information("Erro ao desconectar com o BIS.");
-
-                this.LogTask.Information("Rotina finalizada.");
-                this.sendFinish(this.bisConnection, femsaInfo, total);
-            }
-        }
-        public async void ImportSG3()
-        {
-            List<FemsaInfo> femsaInfo = new List<FemsaInfo>();
-            int total = 0;
-            try
-            {
-                this.LogTask.Information(String.Format("Rotina iniciada as {0}", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
-
-                this.sendStartedMail(this.bisConnection, String.Format("Importacao SG3 - Rotina iniciada na data {0}", DateTime.Now.ToString(new CultureInfo("pt-BR", true).DateTimeFormat.FullDateTimePattern)));
-
-                this.LogTask.Information("Conectando com o servidor SG3.");
-                var client = new ExecutivaPortClient();                
-                var response = await client.getLiberacaoWithCredentials(@"webservice.femsabrasil", @"Executiva@femsab@3496", 3);
-                if (response == null || response.Count < 1)
-                    throw new Exception("Nao ha registros para importacao");
-
-                this.LogTask.Information(String.Format("{0} registros encontrados.", response.Count.ToString()));
-
-                string line = null;
-                BSEventsInfo events = null;
-                BSPersonsInfoSG3 personsSG3 = null;
-                RE_STATUS reStatus = RE_STATUS.ERROR;
-                int currentline = 1;
-                foreach(Liberacao liberacao in response)
-                {
-                    personsSG3 = new BSPersonsInfoSG3()
-                    {
-                        PERSNO = liberacao.id_colaborador,
-                        NOME = liberacao.colaborador,
-                        RG = liberacao.rg,
-                        CPF = liberacao.cpf,
-                        JOB = liberacao.funcao,
-                        COMPANYNO = liberacao.empresa_terceira,
-                        STATUSTERCEIRO = liberacao.liberado,
-                        TIPOTERCEIRO = liberacao.tipo_terceiro,
-                        ESTABELECIMENTO = liberacao.estabelecimento
-                    };
-
-                    this.LogTask.Information(String.Format("{0} de {1}", (currentline++).ToString(), response.Count.ToString()));
-                    this.LogTask.Information(String.Format("RE: {0}, Nome: {1}, Tipo: {2}, Status {3}", personsSG3.PERSNO, personsSG3.NOME, personsSG3.TIPOTERCEIRO, personsSG3.STATUSTERCEIRO));
-
-                    if (String.IsNullOrEmpty(personsSG3.STATUSTERCEIRO) || personsSG3.STATUSTERCEIRO.ToLower().Equals("n"))
-                    {
-                        this.LogTask.Information("Colaborador inativo ou tipo nao classificado para importacao");
-                        continue;
-                    }
-
-                    if (personsSG3.TIPOTERCEIRO.ToLower().Equals("fixo") || personsSG3.TIPOTERCEIRO.ToLower().Equals("sócio residente") || personsSG3.TIPOTERCEIRO.ToLower().Equals("residente") || personsSG3.TIPOTERCEIRO.ToLower().Equals("aprendiz") ||
-                        personsSG3.TIPOTERCEIRO.ToLower().Equals("outros contratos fixo") || personsSG3.TIPOTERCEIRO.ToLower().Equals("sócio fixo"))
-                    {
-
-                        IMPORT resultImport = this.existRE(personsSG3.PERSNO, personsSG3.NOME, personsSG3.STATUSTERCEIRO, out events);
-
-                        if (resultImport == IMPORT.IMPORT_SAMERE)
-                        {
-                            personsSG3.PERSID = events.PERSID;
-                            //this.updateCustomField(new BSPersons(this.bisManager, this.bisConnection), personsFemsa);
-                        }
-                        else if (resultImport == IMPORT.IMPORT_NEW)
-                        {
-                            personsSG3.PERSID = events.PERSID;
-                            reStatus = this.save(personsSG3);
-                            femsaInfo.Add(new FemsaInfo() { Persno = personsSG3.PERSNO, Nome = personsSG3.NOME, Status = reStatus });
-                        }
-                        else if (resultImport == IMPORT.IMPORT_DOUBLERE)
-                        {
-                            personsSG3.PERSID = events.PERSID;
-                            this.updateCardidDouble(personsSG3.PERSID, events.CARDID);
-                            //this.updateCustomField(new BSPersons(this.bisManager, this.bisConnection), personsFemsa);
-                        }
-                        else if (resultImport == IMPORT.IMPORT_DELETE)
-                        {
-                            reStatus = RE_STATUS.DELETE;
-                            femsaInfo.Add(new FemsaInfo() { Persno = personsSG3.PERSNO, Nome = personsSG3.NOME, Status = reStatus });
-                        }
-                    }
-                    else
-                        this.LogTask.Information("Tipo terceiro nao habilitado para importacao.");
 
                     ++total;
                 }
