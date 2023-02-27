@@ -691,6 +691,10 @@ namespace FemsaTools
             }
         }
 
+        private bool IsOlderThan30(Liberacao l)
+        {
+            return l.liberado.Equals("S") && l.status_alocacao.Equals("S");
+        }
         private async void button7_Click(object sender, EventArgs e)
         {
             try
@@ -714,13 +718,29 @@ namespace FemsaTools
                         string response = await message.Content.ReadAsStringAsync();
                         user = (User)JsonConvert.DeserializeObject<User>(response);
 
-                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.token);
+                        var httpClient = new HttpClient();
+
+                        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.token);
+
+                        //var request = new HttpRequestMessage(HttpMethod.Get, "http://api2.executiva.adm.br/femsabrasil/v1/alocacao/liberada")
+                        //{
+                        //    Content = null
+                        //};
+                        //request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", user.token);
+
+                        // Send the request and get the response
+                        var rr = await httpClient.GetAsync(new Uri(String.Format("{0}/{1}", host.Host + host.Command)));
+
+                        // Handle the response
+                        var rc = rr.Content.ReadAsStringAsync();
+                        var liberacao = JsonConvert.DeserializeObject<List<Liberacao>>(rc.Result);
+                        var x = liberacao.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S") && l.status_alocacao != null && l.status_alocacao.Equals("S"); });
 
                         // Send the POST request
-                        var rp = await client.PostAsync("http://api2.executiva.adm.br/femsabrasil/v1/alocacao/liberada", new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
+                        //var rp = await client.PostAsync("http://api2.executiva.adm.br/femsabrasil/v1/alocacao/liberada", new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
 
                         // Read the response content as a string
-                        var responseContent = await rp.Content.ReadAsStringAsync();
+                        //var responseContent = await rp.Content.ReadAsStringAsync();
 
                         ////clientLib.BaseAddress = new Uri("http://api2.executiva.adm.br");
                         //using (var request = new HttpRequestMessage(HttpMethod.Post, "http://api2.executiva.adm.br" + host.Command))
