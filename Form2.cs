@@ -714,7 +714,7 @@ namespace FemsaTools
                     using (var client = new HttpClient())
                     {
                         //client.BaseAddress = new Uri(host.Host);
-                        HttpResponseMessage message = await client.PostAsync(host.Host + host.LoginCommand, new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
+                        HttpResponseMessage message = await client.PostAsync(String.Format("{0}/{1}", host.Host, host.LoginCommand), new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
                         string response = await message.Content.ReadAsStringAsync();
                         user = (User)JsonConvert.DeserializeObject<User>(response);
 
@@ -729,13 +729,14 @@ namespace FemsaTools
                         //request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", user.token);
 
                         // Send the request and get the response
-                        var rr = await httpClient.GetAsync(new Uri(String.Format("{0}/{1}", host.Host + host.Command)));
+                        var rr = await httpClient.GetAsync(new Uri(String.Format("{0}/{1}", host.Host, host.Command)));
 
                         // Handle the response
                         var rc = rr.Content.ReadAsStringAsync();
                         var liberacao = JsonConvert.DeserializeObject<List<Liberacao>>(rc.Result);
                         var x = liberacao.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S") && l.status_alocacao != null && l.status_alocacao.Equals("S"); });
-
+                        string f = JsonConvert.SerializeObject(x);
+                        File.WriteAllText(@"c:\temp\sg3.json", f);
                         // Send the POST request
                         //var rp = await client.PostAsync("http://api2.executiva.adm.br/femsabrasil/v1/alocacao/liberada", new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
 
