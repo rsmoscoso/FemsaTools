@@ -965,5 +965,72 @@ namespace FemsaTools
             }
 
         }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            StreamReader reader = null;
+            string line = null;
+            try
+            {
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\DeleteSG3.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                if (openFileDialog1.ShowDialog() == DialogResult.Cancel) throw new Exception("Nenhum arquivo lido.");
+
+                this.ReadParameters();
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                this.LogTask.Information(String.Format("Lendo o arquivo com os colaboradores. Filename: {0}", openFileDialog1.FileName));
+                reader = new StreamReader(openFileDialog1.FileName);
+
+                this.LogTask.Information("Conectando com o BIS.");
+                if (!this.BISManager.Connect())
+                    throw new Exception("Erro ao conectar com o BIS.");
+
+                this.LogTask.Information("BIS conectado com sucesso!");
+
+                string sql = null;
+                BSPersons persons = new BSPersons(this.BISManager, this.bisACEConnection);
+                while ((line = reader.ReadLine()) != null)
+                {
+                    string[] arr = line.Split(';');
+                    string persno = arr[0];
+                    string nome = arr[1];
+                    this.LogTask.Information(String.Format("Persno: {0}, Nome: {1}", persno, nome));
+
+                    sql = String.Format("select persid, nome = isnull(firstname, '') + ' ' + isnull(lastname, '') from bsuser.persons where persno = '{0}'", persno);
+
+                    using (DataTable table = this.bisACEConnection.loadDataTable(sql))
+                    {
+                        if (table.Rows.Count > 0)
+                        {
+                            this.LogTask.Information(String.Format("Excluindo o colaborador: Persid: {0}", table.Rows[0]["persid"].ToString()));
+                            if (persons.DeletePerson(table.Rows[0]["persid"].ToString()) == BS_ADD.SUCCESS)
+                                this.LogTask.Information("Pessoa excluída com sucesso.");
+                            else
+                                this.LogTask.Information("Erro ao excluir a pessoa.");
+                        }
+                    }
+                }
+
+                this.Cursor = Cursors.WaitCursor;
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+            }
+        }
     }
 }

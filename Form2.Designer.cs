@@ -68,11 +68,12 @@ namespace FemsaTools
             this.rdbNotYet = new System.Windows.Forms.RadioButton();
             this.rdbAccess = new System.Windows.Forms.RadioButton();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.button11 = new System.Windows.Forms.Button();
+            this.button10 = new System.Windows.Forms.Button();
             this.button9 = new System.Windows.Forms.Button();
             this.button7 = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.button10 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -103,7 +104,7 @@ namespace FemsaTools
             this.tabPage1.Controls.Add(this.button6);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage1.Size = new System.Drawing.Size(768, 400);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Rotinas WFM";
@@ -184,7 +185,7 @@ namespace FemsaTools
             this.tabPage2.Controls.Add(this.button2);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage2.Size = new System.Drawing.Size(768, 400);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Administração";
@@ -445,6 +446,7 @@ namespace FemsaTools
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.button11);
             this.tabPage4.Controls.Add(this.button10);
             this.tabPage4.Controls.Add(this.button9);
             this.tabPage4.Controls.Add(this.button7);
@@ -454,6 +456,26 @@ namespace FemsaTools
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "SG3";
             this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // button11
+            // 
+            this.button11.Location = new System.Drawing.Point(420, 14);
+            this.button11.Name = "button11";
+            this.button11.Size = new System.Drawing.Size(115, 35);
+            this.button11.TabIndex = 13;
+            this.button11.Text = "Excluir SG3";
+            this.button11.UseVisualStyleBackColor = true;
+            this.button11.Click += new System.EventHandler(this.button11_Click);
+            // 
+            // button10
+            // 
+            this.button10.Location = new System.Drawing.Point(283, 14);
+            this.button10.Name = "button10";
+            this.button10.Size = new System.Drawing.Size(121, 35);
+            this.button10.TabIndex = 12;
+            this.button10.Text = "Check SG3 Last Card";
+            this.button10.UseVisualStyleBackColor = true;
+            this.button10.Click += new System.EventHandler(this.button10_Click);
             // 
             // button9
             // 
@@ -478,16 +500,6 @@ namespace FemsaTools
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
-            // 
-            // button10
-            // 
-            this.button10.Location = new System.Drawing.Point(283, 14);
-            this.button10.Name = "button10";
-            this.button10.Size = new System.Drawing.Size(121, 35);
-            this.button10.TabIndex = 12;
-            this.button10.Text = "Check SG3 Last Card";
-            this.button10.UseVisualStyleBackColor = true;
-            this.button10.Click += new System.EventHandler(this.button10_Click);
             // 
             // Form2
             // 
@@ -560,5 +572,6 @@ namespace FemsaTools
         private System.Windows.Forms.Button button8;
         private System.Windows.Forms.Button button9;
         private System.Windows.Forms.Button button10;
+        private System.Windows.Forms.Button button11;
     }
 }
