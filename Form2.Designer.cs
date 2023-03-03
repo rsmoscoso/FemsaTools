@@ -39,6 +39,7 @@ namespace FemsaTools
             this.button1 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.button12 = new System.Windows.Forms.Button();
             this.button8 = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -74,6 +75,8 @@ namespace FemsaTools
             this.button7 = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.button13 = new System.Windows.Forms.Button();
+            this.button14 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -180,6 +183,9 @@ namespace FemsaTools
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.button14);
+            this.tabPage2.Controls.Add(this.button13);
+            this.tabPage2.Controls.Add(this.button12);
             this.tabPage2.Controls.Add(this.button8);
             this.tabPage2.Controls.Add(this.groupBox3);
             this.tabPage2.Controls.Add(this.button2);
@@ -190,6 +196,16 @@ namespace FemsaTools
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Administração";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // button12
+            // 
+            this.button12.Location = new System.Drawing.Point(260, 6);
+            this.button12.Name = "button12";
+            this.button12.Size = new System.Drawing.Size(121, 35);
+            this.button12.TabIndex = 12;
+            this.button12.Text = "Excluir sem Acesso";
+            this.button12.UseVisualStyleBackColor = true;
+            this.button12.Click += new System.EventHandler(this.button12_Click);
             // 
             // button8
             // 
@@ -501,6 +517,26 @@ namespace FemsaTools
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
+            // button13
+            // 
+            this.button13.Location = new System.Drawing.Point(387, 6);
+            this.button13.Name = "button13";
+            this.button13.Size = new System.Drawing.Size(121, 35);
+            this.button13.TabIndex = 13;
+            this.button13.Text = "Ajustar CPF";
+            this.button13.UseVisualStyleBackColor = true;
+            this.button13.Click += new System.EventHandler(this.button13_Click);
+            // 
+            // button14
+            // 
+            this.button14.Location = new System.Drawing.Point(514, 6);
+            this.button14.Name = "button14";
+            this.button14.Size = new System.Drawing.Size(121, 35);
+            this.button14.TabIndex = 14;
+            this.button14.Text = "BIS Sem Detector";
+            this.button14.UseVisualStyleBackColor = true;
+            this.button14.Click += new System.EventHandler(this.button14_Click);
+            // 
             // Form2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -573,5 +609,8 @@ namespace FemsaTools
         private System.Windows.Forms.Button button9;
         private System.Windows.Forms.Button button10;
         private System.Windows.Forms.Button button11;
+        private System.Windows.Forms.Button button12;
+        private System.Windows.Forms.Button button13;
+        private System.Windows.Forms.Button button14;
     }
 }
