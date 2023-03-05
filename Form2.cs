@@ -698,6 +698,7 @@ namespace FemsaTools
         }
         private async void button7_Click(object sender, EventArgs e)
         {
+            StreamWriter writer = new StreamWriter(@"c:\temp\sg3tipo.csv");
             try
             {
                 this.LogSG3Task = new LoggerConfiguration()
@@ -714,7 +715,6 @@ namespace FemsaTools
                     User user = new User() { username = host.Username, password = host.Password };
                     using (var client = new HttpClient())
                     {
-                        //client.BaseAddress = new Uri(host.Host);
                         HttpResponseMessage message = await client.PostAsync(String.Format("{0}/{1}", host.Host, host.LoginCommand), new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
                         string response = await message.Content.ReadAsStringAsync();
                         user = (User)JsonConvert.DeserializeObject<User>(response);
@@ -723,40 +723,37 @@ namespace FemsaTools
 
                         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", user.token);
 
-                        //var request = new HttpRequestMessage(HttpMethod.Get, "http://api2.executiva.adm.br/femsabrasil/v1/alocacao/liberada")
-                        //{
-                        //    Content = null
-                        //};
-                        //request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", user.token);
-
                         // Send the request and get the response
                         var rr = await httpClient.GetAsync(new Uri(String.Format("{0}/{1}", host.Host, host.Command)));
 
                         // Handle the response
                         var rc = rr.Content.ReadAsStringAsync();
                         var liberacao = JsonConvert.DeserializeObject<List<Liberacao>>(rc.Result);
-                        var x = liberacao.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S") && l.status_alocacao != null && l.status_alocacao.Equals("S"); });
-                        string f = JsonConvert.SerializeObject(x);
-                        File.WriteAllText(@"c:\temp\sg3.json", f);
-                        // Send the POST request
-                        //var rp = await client.PostAsync("http://api2.executiva.adm.br/femsabrasil/v1/alocacao/liberada", new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
+                        foreach(Liberacao l in liberacao)
+                        {
+                            if (l.tipo_terceiro == null)
+                                continue;
+                            if (l.tipo_terceiro.ToLower().Equals("aprendiz") || l.tipo_terceiro.ToLower().Equals("fixo") || l.tipo_terceiro.ToLower().Equals("volante") ||
+                            l.tipo_terceiro.ToLower().Equals("outros contratos fixo") || l.tipo_terceiro.ToLower().Equals("socio fixo") || l.tipo_terceiro.ToLower().Equals("cooperfemsa") ||
+                            l.tipo_terceiro.ToLower().Equals("estagiario") || l.tipo_terceiro.ToLower().Equals("outros contratos aprendiz"))
+                            {
+                                if (l.liberado.Equals("S") && l.status_alocacao != null && l.status_alocacao.Equals("S"))
+                                {
+                                    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6}", host.Username, l.tipo_terceiro, l.liberado, l.status_alocacao, l.id_colaborador, l.cpf, l.colaborador));
+                                }
+                            }
+                        }
 
-                        // Read the response content as a string
-                        //var responseContent = await rp.Content.ReadAsStringAsync();
-
-                        ////clientLib.BaseAddress = new Uri("http://api2.executiva.adm.br");
-                        //using (var request = new HttpRequestMessage(HttpMethod.Post, "http://api2.executiva.adm.br" + host.Command))
-                        //{
-                        //    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", user.token);
-                        //    var responseget = await client.SendAsync(request);
-                        //    string responsestr = await responseget.Content.ReadAsStringAsync();
-                        //    var liberacao = JsonConvert.DeserializeObject<List<Liberacao>>(responsestr);
-                        //    var x = liberacao.FindAll(delegate (Liberacao l) { return l.liberado.Equals("S") && l.status_alocacao.Equals("S"); });
-                        //    import.Import(x);
-                        //}
                     }
+                    //var x = liberacao.FindAll(delegate (Liberacao l) {
+                    //        return l.liberado.Equals("S") && l.status_alocacao != null && l.status_alocacao.Equals("S") &&
+                    //        (l.tipo_terceiro.ToLower().Equals("aprendiz") || l.tipo_terceiro.ToLower().Equals("fixo") || l.tipo_terceiro.ToLower().Equals("volante") ||
+                    //        l.tipo_terceiro.ToLower().Equals("outros contratos fixo") || l.tipo_terceiro.ToLower().Equals("socio fixo") || l.tipo_terceiro.ToLower().Equals("cooperfemsa") ||
+                    //        l.tipo_terceiro.ToLower().Equals("estagiario") || l.tipo_terceiro.ToLower().Equals("outros contratos aprendiz")); });
+                    //    import.Import(x);
+                    //}
                 }
-
+                MessageBox.Show("ok");
                 this.Cursor = Cursors.Default;
             }
             catch (Exception ex)
@@ -766,12 +763,13 @@ namespace FemsaTools
             }
             finally
             {
+                writer.Close();
                 this.Cursor = Cursors.Default;
-                this.LogTask.Information("Descontecando o BIS.");
-                if (this.BISManager.Disconnect())
-                    this.LogTask.Information("BIS desconectado com sucesso.");
-                else
-                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+                //this.LogTask.Information("Descontecando o BIS.");
+                //if (this.BISManager.Disconnect())
+                //    this.LogTask.Information("BIS desconectado com sucesso.");
+                //else
+                //    this.LogTask.Information("Erro ao desconectar com o BIS.");
 
                 this.LogTask.Information("Rotina finalizada..");
             }
@@ -1269,6 +1267,75 @@ namespace FemsaTools
                 this.Cursor = Cursors.Default;
                 this.LogTask.Information("Rotina finalizada..");
             }
+        }
+
+        private void button15_Click(object sender, EventArgs e)
+        {
+            StreamReader reader = null;
+            string line = null;
+            try
+            {
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\RemoveAuthorizaion.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.ReadParameters();
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                this.LogTask.Information("Lendo o arquivo com as autorizacoes.");
+                List<BSPersonsInfo> personsInfo = Global.readCSV(openFileDialog1);
+
+                this.LogTask.Information("Conectando com o BIS.");
+                if (!this.BISManager.Connect())
+                    throw new Exception("Erro ao conectar com o BIS.");
+
+                this.LogTask.Information("BIS conectado com sucesso!");
+
+                foreach (BSPersonsInfo info in personsInfo)
+                {
+                    BSPersons persons = new BSPersons(this.BISManager, this.bisACEConnection);
+                    this.LogTask.Information(String.Format("Carregando o colaborador: Persno: {0}", info.PERSNO));
+                    if (persons.Load(info.PERSNO, BS_STATUS.ACTIVE))
+                    {
+                        this.LogTask.Information("Colaborador carregado com sucesso.");
+                        foreach (BSAuthorizationInfo authinfo in info.AUTHORIZATIONS)
+                        {
+                            this.LogTask.Information(String.Format("Verificando a autorizacao: Nome: {0}", authinfo.SHORTNAME));
+                            string authid = BSSQLAuthorizations.GetID(this.bisACEConnection, authinfo.SHORTNAME);
+                            if (String.IsNullOrEmpty(authid))
+                            {
+                                this.LogTask.Information("Autorizacao nao encontrada.");
+                                break;
+                            }
+
+                            if (persons.RemoveAuthorization(authid) == API_RETURN_CODES_CS.API_SUCCESS_CS)
+                                this.LogTask.Information("Autorizacao removida com sucesso.");
+                            else
+                                this.LogTask.Information("Erro ao remover a autorizacao.");
+                        }
+                    }
+                    else
+                        this.LogTask.Information("Erro ao carregar o colaborador.");
+                }
+
+                this.Cursor = Cursors.WaitCursor;
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+            }
+
         }
     }
 }

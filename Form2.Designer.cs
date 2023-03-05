@@ -77,6 +77,7 @@ namespace FemsaTools
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.button13 = new System.Windows.Forms.Button();
             this.button14 = new System.Windows.Forms.Button();
+            this.button15 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -183,6 +184,7 @@ namespace FemsaTools
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.button15);
             this.tabPage2.Controls.Add(this.button14);
             this.tabPage2.Controls.Add(this.button13);
             this.tabPage2.Controls.Add(this.button12);
@@ -199,7 +201,7 @@ namespace FemsaTools
             // 
             // button12
             // 
-            this.button12.Location = new System.Drawing.Point(260, 6);
+            this.button12.Location = new System.Drawing.Point(6, 129);
             this.button12.Name = "button12";
             this.button12.Size = new System.Drawing.Size(121, 35);
             this.button12.TabIndex = 12;
@@ -209,7 +211,7 @@ namespace FemsaTools
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(133, 6);
+            this.button8.Location = new System.Drawing.Point(6, 88);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(121, 35);
             this.button8.TabIndex = 11;
@@ -224,7 +226,7 @@ namespace FemsaTools
             this.groupBox3.Controls.Add(this.button5);
             this.groupBox3.Controls.Add(this.txtREDivisao);
             this.groupBox3.Controls.Add(this.label3);
-            this.groupBox3.Location = new System.Drawing.Point(6, 47);
+            this.groupBox3.Location = new System.Drawing.Point(486, 23);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(266, 100);
             this.groupBox3.TabIndex = 10;
@@ -519,7 +521,7 @@ namespace FemsaTools
             // 
             // button13
             // 
-            this.button13.Location = new System.Drawing.Point(387, 6);
+            this.button13.Location = new System.Drawing.Point(6, 170);
             this.button13.Name = "button13";
             this.button13.Size = new System.Drawing.Size(121, 35);
             this.button13.TabIndex = 13;
@@ -529,13 +531,23 @@ namespace FemsaTools
             // 
             // button14
             // 
-            this.button14.Location = new System.Drawing.Point(514, 6);
+            this.button14.Location = new System.Drawing.Point(6, 211);
             this.button14.Name = "button14";
             this.button14.Size = new System.Drawing.Size(121, 35);
             this.button14.TabIndex = 14;
             this.button14.Text = "BIS Sem Detector";
             this.button14.UseVisualStyleBackColor = true;
             this.button14.Click += new System.EventHandler(this.button14_Click);
+            // 
+            // button15
+            // 
+            this.button15.Location = new System.Drawing.Point(6, 47);
+            this.button15.Name = "button15";
+            this.button15.Size = new System.Drawing.Size(121, 35);
+            this.button15.TabIndex = 15;
+            this.button15.Text = "Remover Pessoas por Autorização";
+            this.button15.UseVisualStyleBackColor = true;
+            this.button15.Click += new System.EventHandler(this.button15_Click);
             // 
             // Form2
             // 
@@ -612,5 +624,6 @@ namespace FemsaTools
         private System.Windows.Forms.Button button12;
         private System.Windows.Forms.Button button13;
         private System.Windows.Forms.Button button14;
+        private System.Windows.Forms.Button button15;
     }
 }
