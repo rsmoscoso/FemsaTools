@@ -1174,15 +1174,15 @@ namespace FemsaTools
                     this.LogTask.Information(String.Format("RE: {0}, Nome: {1}, CPF: {2}, Status: {3}", personsFemsa.PERSNO, personsFemsa.NOME, personsFemsa.CPF, personsFemsa.STATUSPROPRIO));
 
                     this.LogTask.Information("Pesquisando a existencia do colaborador.");
-                    string sql = String.Format("select distinct per.persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, '') from bsuser.ADDITIONALFIELDS fd " +
-                        "inner join bsuser.persons per on per.persid = fd.persid where FIELDDESCID = '00137EFFB5D874FE' and persclass = 'E' and status = 1 and fd.value = '{0}'", personsFemsa.CPF);
+                    string sql = String.Format("select distinct per.persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), cli.Name from bsuser.ADDITIONALFIELDS fd " +
+                        "inner join bsuser.persons per on per.persid = fd.persid inner join bsuser.clients cli on cli.clientid = per.clientid where FIELDDESCID = '00137EFFB5D874FE' and persclass = 'E' and status = 1 and fd.value = '{0}'", personsFemsa.CPF);
                     using (DataTable table = this.bisACEConnection.loadDataTable(sql))
                     {
                         if (table != null && table.Rows.Count > 0)
                         {
                             foreach (DataRow row in table.Rows)
                             {
-                                writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5}", row["persid"].ToString(), row["nome"].ToString(), personsFemsa.NOME, row["persno"].ToString(), personsFemsa.PERSNO, personsFemsa.STATUSPROPRIO));
+                                writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6}", row["persid"].ToString(), row["nome"].ToString(), personsFemsa.NOME, row["persno"].ToString(), personsFemsa.PERSNO, personsFemsa.STATUSPROPRIO, row["name"].ToString()));
                                 //this.LogTask.Information(String.Format("BIS {0} == SAP {1}", row["persno"].ToString(), personsFemsa.PERSNO));
                                 //if (row["persno"].ToString().Equals(personsFemsa.PERSNO))
                                 //    break;
