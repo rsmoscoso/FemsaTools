@@ -77,54 +77,50 @@ namespace FemsaTools.SG3
         /// Importa os dados do SG3.
         /// </summary>
         /// <param name="liberacao">Classe com os dados do SG3.</param>
-        public void Import(List<Liberacao> lstliberacao)
+        public void Import(Liberacao liberacao)
         {
             try
             {
                 string firstname = "";
                 string lastname = "";
                 int i = 1;
-                foreach (Liberacao liberacao in lstliberacao)
+                BSCommon.ParseName(liberacao.colaborador.Replace("'", ""), out firstname, out lastname);
+
+                string sql = String.Format("select persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), persclassid from bsuser.persons where status = 1 and persclass = 'E' and persno = '{0}'",
+                    liberacao.cpf.Replace("'", ""));
+                using (DataTable table = this.bisConnection.loadDataTable(sql))
                 {
-                    BSCommon.ParseName(liberacao.colaborador.Replace("'", ""), out firstname, out lastname);
-
-                    this.LogTask.Information(String.Format("{0} de {1}. RG: {2}, CPF: {3}, Nome: {4}", (i++).ToString(), lstliberacao.Count.ToString(), liberacao.rg, liberacao.cpf, liberacao.colaborador.Replace("'", "")));
-
-                    string sql = String.Format("select persid, persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), persclassid from bsuser.persons where status = 1 and persclass = 'E' and persno = '{0}'",
-                        liberacao.cpf.Replace("'", ""));
-                    using (DataTable table = this.bisConnection.loadDataTable(sql))
+                    if (table.Rows.Count > 0)
                     {
-                        if (table.Rows.Count > 0)
+                        this.LogTask.Information(String.Format("{0} registros encontrados.", table.Rows.Count.ToString()));
+                    }
+                    else
+                    {
+                        this.LogTask.Information("Nova pessoa.");
+
+                        string clientid = this.getClientidFromArea(liberacao.estabelecimento);
+                        if (!String.IsNullOrEmpty(clientid))
                         {
-                            this.LogTask.Information(String.Format("{0} registros encontrados.", table.Rows.Count.ToString()));
-                        }
-                        else
-                        {
-                            this.LogTask.Information("Novo colaborador.");
-
-                            string clientid = this.getClientidFromArea(liberacao.estabelecimento);
-                            if (!String.IsNullOrEmpty(clientid))
-                            {
-                                this.LogTask.Information(String.Format("Alterando a divisao para o ID: {0}", clientid));
-                                if (this.bisManager.SetClientID(clientid))
-                                    this.LogTask.Information("ClientID alterado com sucesso.");
-                                else
-                                    this.LogTask.Information(String.Format("Erro ao alterar o ClientID. {0}", this.bisManager.GetErrorMessage()));
-                            }
-
-                            BSPersons per = new BSPersons(this.bisManager, this.bisConnection);
-                            per.PERSNO = liberacao.cpf.Replace("'", "").Replace(".", "").Replace("-", "");
-                            per.FIRSTNAME = firstname;
-                            per.LASTNAME = lastname;
-                            per.GRADE = "SG3";
-                            per.PERSCLASSID = "0013B4437A2455E1";
-                            per.JOB = liberacao.funcao.Replace("'", "");
-                            per.COMPANYID = BSSQLCompanies.GetIDCNPJ(this.bisConnection, liberacao.cnpj);
-
-                            if (per.Save() == BS_SAVE.SUCCESS)
-                                this.LogTask.Information("Colaborador gravado com sucess.");
+                            this.LogTask.Information(String.Format("Alterando a divisao para o ID: {0}", clientid));
+                            if (this.bisManager.SetClientID(clientid))
+                                this.LogTask.Information("ClientID alterado com sucesso.");
                             else
-                                this.LogTask.Information("Erro ao gravar o colaborador.");
+                                this.LogTask.Information(String.Format("Erro ao alterar o ClientID. {0}", this.bisManager.GetErrorMessage()));
+                        }
+                        using (BSPersons persons = new BSPersons(this.bisManager, this.bisConnection))
+                        {
+                            persons.PERSNO = liberacao.cpf.Replace("'", "").Replace(".", "").Replace("-", "");
+                            persons.FIRSTNAME = firstname;
+                            persons.LASTNAME = lastname;
+                            persons.GRADE = "SG3";
+                            persons.PERSCLASSID = "0013B4437A2455E1";
+                            persons.JOB = liberacao.funcao.Replace("'", "");
+                            persons.COMPANYID = BSSQLCompanies.GetIDCNPJ(this.bisConnection, liberacao.cnpj);
+
+                            if (persons.Save() == BS_SAVE.SUCCESS)
+                                this.LogTask.Information("Pessoa gravada com sucesso.");
+                            else
+                                this.LogTask.Information("Erro ao gravar a pessoa.");
                         }
                     }
                 }
@@ -134,19 +130,38 @@ namespace FemsaTools.SG3
                 this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
                 //this.sendErrorMail(this.bisConnection, ex.Message);
             }
-            finally
-            {
-                if (this.bisManager.IsConnected)
-                {
-                    this.LogTask.Information("Descontecando o BIS.");
+        }
 
-                    if (this.bisManager.Disconnect())
-                        this.LogTask.Information("BIS desconectado com sucesso.");
-                    else
-                        this.LogTask.Information("Erro ao desconectar com o BIS.");
+        /// <summary>
+        /// Deleta os dados do SG3.
+        /// </summary>
+        /// <param name="liberacao">Classe com os dados do SG3.</param>
+        public void Delete(Liberacao liberacao)
+        {
+            try
+            {
+                string sql = String.Format("select persid from bsuser.persons where status = 1 and persclass = 'E' and persno = '{0}' and grade = 'SG3' and persclassid = '0013B4437A2455E1'",
+                    liberacao.cpf.Replace("'", ""));
+                using (DataTable table = this.bisConnection.loadDataTable(sql))
+                {
+                    if (table.Rows.Count > 0)
+                    {
+                        this.LogTask.Information(String.Format("{0} registros encontrados.", table.Rows.Count.ToString()));
+                        using (BSPersons persons = new BSPersons(this.bisManager, this.bisConnection))
+                        {
+                            this.LogTask.Information("Excluindo a pessoa.");
+                            if (persons.DeletePerson(table.Rows[0]["persid"].ToString()) == BS_ADD.SUCCESS)
+                                this.LogTask.Information("Pessoa excluida com sucesso.");
+                            else
+                                this.LogTask.Information("Erro ao excluir a pessoa.");
+                        }
+                    }
                 }
-                this.LogTask.Information("Rotina finalizada.");
-                //this.sendFinish(this.bisConnection, femsaInfo, total);
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+                //this.sendErrorMail(this.bisConnection, ex.Message);
             }
         }
         #endregion

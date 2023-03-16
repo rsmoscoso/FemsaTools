@@ -255,12 +255,12 @@ namespace FemsaTools
                 {
                     if (tbl != null && tbl.Rows.Count == 1)
                     {
-                        if (tbl.Rows[0]["status"].Equals("0") && status.ToLower().Equals("saiu da empresa"))
+                        if (tbl.Rows[0]["status"].ToString().Equals("0") && status.ToLower().Equals("saiu da empresa"))
                         {
                             retval = IMPORT.IMPORT_DISABLED;
                             this.LogTask.Information("Pessoa excluida.");
                         }
-                        else if (tbl.Rows[0]["status"].Equals("1") && status.ToLower().Equals("saiu da empresa"))
+                        else if (tbl.Rows[0]["status"].ToString().Equals("1") && status.ToLower().Equals("saiu da empresa"))
                         {
                             retval = IMPORT.IMPORT_DELETE;
                             this.deletePerson(tbl.Rows[0]["persid"].ToString());
@@ -1083,29 +1083,30 @@ namespace FemsaTools
             {
                 this.LogTask.Information(String.Format("Rotina iniciada as {0}", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
 
-                reader = new StreamReader(@"c:\temp\boschadmitidos-fevereiro.csv");
+                reader = new StreamReader(@"c:\temp\bosch_3");
 
                 string line = null;
                 BSEventsInfo events = null;
-                BSPersonsInfoFEMSA personsFemsa = null;
+                //BSPersonsInfoFEMSA personsFemsa = null;
                 RE_STATUS reStatus = RE_STATUS.ERROR;
                 int totallines = 0;
                 int currentline = 1;
                 while ((reader.ReadLine() != null))
                     totallines++;
                 reader.Close();
-                reader = new StreamReader(@"c:\temp\boschadmitidos-fevereiro.csv");
+                //reader = new StreamReader(@"c:\temp\boschadmitidos-fevereiro.csv");
 
-                while ((line = reader.ReadLine()) != null)
+                //while ((line = reader.ReadLine()) != null)
+                foreach (BSPersonsInfoFEMSA personsFemsa in list)
                 {
                     this.LogTask.Information(String.Format("{0} de {1}", (currentline++).ToString(), totallines.ToString()));
-                    this.LogTask.Information(String.Format("RE: {0}", line));
+                    this.LogTask.Information(String.Format("RE: {0}", personsFemsa.PERSNO));
 
-                    if ((personsFemsa = list.Find(s => s.PERSNO.Equals(line))) == null)
-                    {
-                        this.LogTask.Information("Nao encontrado.");
-                        continue;
-                    }
+                    //if ((personsFemsa = list.Find(s => s.PERSNO.Equals(line))) == null)
+                    //{
+                    //    this.LogTask.Information("Nao encontrado.");
+                    //    continue;
+                    //}
 
                     IMPORT resultImport = this.existRE(personsFemsa.PERSNO, personsFemsa.NOME, personsFemsa.STATUSPROPRIO, out events);
 

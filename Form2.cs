@@ -26,6 +26,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static FemsaTools.FEMSAImport;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace FemsaTools
 {
@@ -361,7 +362,7 @@ namespace FemsaTools
 
                 this.ReadParameters();
 
-                StreamReader reader = new StreamReader(@"c:\temp\Bosch_8");
+                StreamReader reader = new StreamReader(@"c:\temp\Bosch_3");
                 string line = null;
                 BSPersonsInfoFEMSA personsFemsa = null;
                 List<BSPersonsInfoFEMSA> list = new List<BSPersonsInfoFEMSA>();
@@ -698,7 +699,8 @@ namespace FemsaTools
         }
         private async void button7_Click(object sender, EventArgs e)
         {
-            StreamWriter writer = new StreamWriter(@"c:\temp\sg3tipo.csv");
+            //StreamWriter writer = new StreamWriter(@"c:\temp\sg3tipo.csv");
+            BSPersons persons = null;
             try
             {
                 this.LogSG3Task = new LoggerConfiguration()
@@ -709,9 +711,11 @@ namespace FemsaTools
                     .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\BlockSG3TaskLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
+                persons = new BSPersons(this.BISManager, this.bisACEConnection);
                 SG3Import import = new SG3Import(this.LogSG3Task, this.LogSG3Result, this.BISACESQL, this.BISSQL, this.BISManager);
                 foreach (SG3Host host in this.SG3Hosts)
                 {
+                    this.LogSG3Task.Information(String.Format("Pesquisando a base: {0}", host.Username));
                     User user = new User() { username = host.Username, password = host.Password };
                     using (var client = new HttpClient())
                     {
@@ -729,21 +733,47 @@ namespace FemsaTools
                         // Handle the response
                         var rc = rr.Content.ReadAsStringAsync();
                         var liberacao = JsonConvert.DeserializeObject<List<Liberacao>>(rc.Result);
+                        this.LogSG3Task.Information(String.Format("{0} registros encontrados.", liberacao.Count.ToString()));
+                        int count = 1;
                         foreach(Liberacao l in liberacao)
                         {
+                            this.LogSG3Task.Information(String.Format("{0} de {1}, RG: {2}, CPF: {3}, Nome: {4}", (count++).ToString(), liberacao.Count.ToString(), l.rg, l.cpf, l.colaborador.Replace("'", "")));
+
                             if (l.tipo_terceiro == null)
                                 continue;
+
                             if (l.tipo_terceiro.ToLower().Equals("aprendiz") || l.tipo_terceiro.ToLower().Equals("fixo") || l.tipo_terceiro.ToLower().Equals("volante") ||
                             l.tipo_terceiro.ToLower().Equals("outros contratos fixo") || l.tipo_terceiro.ToLower().Equals("socio fixo") || l.tipo_terceiro.ToLower().Equals("cooperfemsa") ||
-                            l.tipo_terceiro.ToLower().Equals("estagiario") || l.tipo_terceiro.ToLower().Equals("outros contratos aprendiz"))
+                            l.tipo_terceiro.ToLower().Equals("estagiario") || l.tipo_terceiro.ToLower().Equals("outros contratos aprendiz") || l.tipo_terceiro.ToLower().Equals("residente") ||
+                            l.tipo_terceiro.ToLower().Equals("outros contratos") || l.tipo_terceiro.ToLower().Equals("temporario 6019") ||
+                            l.tipo_terceiro.ToLower().Equals("socio residente"))
                             {
-                                if (l.liberado.Equals("S") && l.status_alocacao != null && l.status_alocacao.Equals("S"))
+                                if (host.Username.ToLower().Equals("webservice.femsabrasil") && l.liberado.Equals("S"))
                                 {
-                                    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6}", host.Username, l.tipo_terceiro, l.liberado, l.status_alocacao, l.id_colaborador, l.cpf, l.colaborador));
+                                    this.LogSG3Task.Information("Importando....");
+                                    import.Import(l);
+                                }
+
+                                if (host.Username.ToLower().Equals("webservice.femsa") || host.Username.ToLower().Equals("webservice.femsat1"))
+                                {
+                                    if (String.IsNullOrEmpty(l.cpf))
+                                    {
+                                        this.LogTask.Information("CPF em branco.");
+                                        continue;
+                                    }
+                                    if (l.tipo_terceiro.ToLower().Equals("residente") || l.tipo_terceiro.ToLower().Equals("socio residente"))
+                                    {
+                                        this.LogSG3Task.Information("Importando....");
+                                        import.Import(l);
+                                    }
+                                    else
+                                    {
+                                        this.LogSG3Task.Information("Excluindo....");
+                                        import.Delete(l);
+                                    }
                                 }
                             }
                         }
-
                     }
                     //var x = liberacao.FindAll(delegate (Liberacao l) {
                     //        return l.liberado.Equals("S") && l.status_alocacao != null && l.status_alocacao.Equals("S") &&
@@ -759,17 +789,16 @@ namespace FemsaTools
             catch (Exception ex)
             {
                 this.Cursor = Cursors.Default;
-                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+                this.LogSG3Task.Information(String.Format("Erro: {0}", ex.Message));
             }
             finally
             {
-                writer.Close();
                 this.Cursor = Cursors.Default;
-                //this.LogTask.Information("Descontecando o BIS.");
-                //if (this.BISManager.Disconnect())
-                //    this.LogTask.Information("BIS desconectado com sucesso.");
-                //else
-                //    this.LogTask.Information("Erro ao desconectar com o BIS.");
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
 
                 this.LogTask.Information("Rotina finalizada..");
             }
@@ -1212,61 +1241,7 @@ namespace FemsaTools
 
         private void button14_Click(object sender, EventArgs e)
         {
-            StreamReader reader = null;
-            StreamWriter writer = null;
-            try
-            {
-                string line = null;
-                this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\AjustarSemDetector.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
-                    .CreateLogger();
 
-                this.ReadParameters();
-                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
-                this.bisConnection = new HzConexao(this.BISSQL.SQLHost, this.BISSQL.SQLUser, this.BISSQL.SQLPwd, "BISEventLog", "System.Data.SqlClient");
-
-                this.LogTask.Information("Lendo o arquivo com as empresas.");
-                if (openFileDialog1.ShowDialog() == DialogResult.Cancel) throw new Exception("Nenhum arquivo lido.");
-
-                this.Cursor = Cursors.WaitCursor;
-
-                reader = new StreamReader(openFileDialog1.FileName);
-                writer = new StreamWriter(@"c:\temp\tipoacessocorrigido.csv");
-                while ((line = reader.ReadLine()) != null)
-                {
-                    string[] arr = line.Split(';');
-                    string id = arr[0];
-                    using (DataTable table = this.bisConnection.loadDataTable(String.Format("select AddressTag from LogEvent " +
-                        "inner join LogAddress on LogAddress.ID = LogEvent.addressId where LogEvent.id = {0}", id)))
-                    {
-                        string tag = table.Rows[0]["addresstag"].ToString();
-                        string add = tag.Substring(23, tag.Length - 23);
-                        string leitor = add.Substring(0, add.Length - 7);
-
-                        using (DataTable tableACE = this.bisACEConnection.loadDataTable(String.Format("select description from bsuser.devices where displaytext = '{0}'", leitor)))
-                        {
-                            writer.WriteLine(tableACE.Rows[0]["description"].ToString());
-                        }
-                    }
-
-                }
-
-                this.Cursor = Cursors.Default;
-
-                reader.Close();
-                writer.Close();
-                MessageBox.Show("ök");
-            }
-            catch (Exception ex)
-            {
-                this.Cursor = Cursors.Default;
-                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
-            }
-            finally
-            {
-                this.Cursor = Cursors.Default;
-                this.LogTask.Information("Rotina finalizada..");
-            }
         }
 
         private void button15_Click(object sender, EventArgs e)
@@ -1336,6 +1311,156 @@ namespace FemsaTools
                 this.LogTask.Information("Rotina finalizada..");
             }
 
+        }
+
+        private void button16_Click(object sender, EventArgs e)
+        {
+            StreamReader reader = null;
+            string line = null;
+            try
+            {
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\AjusteSAPBIS.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.ReadParameters();
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                this.LogTask.Information("Lendo o arquivo com as autorizacoes.");
+                if (openFileDialog1.ShowDialog() == DialogResult.Cancel) throw new Exception("Nao ha arquivo para leitura.");
+
+                reader = new StreamReader(openFileDialog1.FileName);
+
+                this.LogTask.Information("Conectando com o BIS.");
+                if (!this.BISManager.Connect())
+                    throw new Exception("Erro ao conectar com o BIS.");
+
+                this.LogTask.Information("BIS conectado com sucesso!");
+
+                string sql = null;
+                string firsntame = null;
+                string lastname = null;
+                string clientid = null;
+                BSPersons per = new BSPersons(this.BISManager, this.bisACEConnection);
+                while ((line = reader.ReadLine()) != null)
+                {
+                    string[] arr = line.Split(';');
+                    string persid = arr[0];
+                    string nome = arr[1];
+                    string re = arr[2];
+                    string divisao = arr[3];
+                    string validacao = arr[4];
+
+                    BSCommon.ParseName(nome, out firsntame, out lastname);
+
+                    this.LogTask.Information(String.Format("Acao: {0}, Persid: {1}, RE: {2}, Nome: {3}, Divisao: {4}", validacao, persid, re, nome, divisao));
+                    if (validacao.Equals("Colocar RE SAP"))
+                    {
+                        sql = String.Format("update bsuser.persons set persno = '{0}' where persid = '{1}'", re, persid);
+                    }
+                    else if (validacao.Equals("Corrigir Nome"))
+                    {
+                        sql = String.Format("update bsuser.persons set firstname = '{0}', lastname = '{1}' where persid = '{2}'", firsntame, lastname, persid);
+                    }
+                    else if (validacao.Equals("Corrigir Nome e RE SAP"))
+                    {
+                        sql = String.Format("update bsuser.persons set firstname = '{0}', lastname = '{1}', persno = '{2}' where persid = '{3}'", firsntame, lastname, re, persid);
+                    }
+                    else if (validacao.Equals("Corrigir Nome e RE SAP e divisão"))
+                    {
+                        this.LogTask.Information("Carregando a pessoa.");
+                        if (per.Load(persid))
+                        {
+                            this.LogTask.Information("Pessoa carregada com sucesso.");
+                            this.LogTask.Information(String.Format("Pesquisando divisao: {0}", divisao));
+                            if (!String.IsNullOrEmpty(clientid = BSSQLClients.GetID(this.bisACEConnection, divisao)))
+                            {
+                                this.LogTask.Information(String.Format("Clientid: {0}", clientid));
+                                if (per.ChangeClient(clientid) == BS_SAVE.SUCCESS)
+                                    this.LogTask.Information("Divisao alterada com sucesso.");
+                                else
+                                    this.LogTask.Information("Erro ao alterar a divisao.");
+                            }
+                            else
+                                this.LogTask.Information("Divisao nao encontrada.");
+                        }
+                        else
+                            this.LogTask.Information("Erro ao carregar a pessoa.");
+
+                        sql = String.Format("update bsuser.persons set firstname = '{0}', lastname = '{1}', persno = '{2}' where persid = '{3}'", firsntame, lastname, re, persid);
+                    }
+                    else if (validacao.Equals("Corrigir nome SAP e Divisão"))
+                    {
+                        this.LogTask.Information("Carregando a pessoa.");
+                        if (per.Load(persid))
+                        {
+                            this.LogTask.Information("Pessoa carregada com sucesso.");
+                            this.LogTask.Information(String.Format("Pesquisando divisao: {0}", divisao));
+                            if (!String.IsNullOrEmpty(clientid = BSSQLClients.GetID(this.bisACEConnection, divisao)))
+                            {
+                                this.LogTask.Information(String.Format("Clientid: {0}", clientid));
+                                if (per.ChangeClient(clientid) == BS_SAVE.SUCCESS)
+                                    this.LogTask.Information("Divisao alterada com sucesso.");
+                                else
+                                    this.LogTask.Information("Erro ao alterar a divisao.");
+                            }
+                            else
+                                this.LogTask.Information("Divisao nao encontrada.");
+                        }
+                        else
+                            this.LogTask.Information("Erro ao carregar a pessoa.");
+
+                        sql = String.Format("update bsuser.persons set firstname = '{0}', lastname = '{1}' where persid = '{2}'", firsntame, lastname, persid);
+                    }
+
+                    this.LogTask.Information("Atualizando o sql.");
+                    if (this.bisACEConnection.executeProcedure(sql))
+                        this.LogTask.Information("SQL atualizado com sucesso.");
+                    else
+                        this.LogTask.Information("Erro ao atualizar o sql");
+                }
+
+                this.Cursor = Cursors.WaitCursor;
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+            }
+        }
+
+        private void button14_Click_1(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                string filename = openFileDialog1.FileName;
+                string line = null;
+                DateTime dateTime = DateTime.Now;
+                bool isDateTime = false;
+                int count = 0;
+                StreamReader reader = new StreamReader(filename);
+                while ((line = reader.ReadLine()) != null)
+                {
+                    string[] arr = line.Split(';');
+                    isDateTime = DateTime.TryParse(arr[0], out dateTime);
+                    if (isDateTime)
+                    {
+                        ++count;
+                    }
+                }
+                reader.Close();
+
+            }
         }
     }
 }
