@@ -98,6 +98,10 @@ namespace FemsaTools
         /// Lista dos hosts do SG3.
         /// </summary>
         private List<SG3Host> SG3Hosts { get; set; }
+        /// <summary>
+        /// Aborta a execução de uma tarefa.
+        /// </summary>
+        private bool abort { get; set; }
 
         #endregion
 
@@ -455,41 +459,34 @@ namespace FemsaTools
             else
                 return null;
         }
-        private void button4_Click(object sender, EventArgs e)
+
+        /// <summary>
+        /// Gera o csv do arquivo info.
+        /// </summary>
+        /// <param name="filename">Nome do arquivo.</param>
+        private bool formatCSV(string filename)
         {
             StreamReader reader = null;
-            StreamWriter writer = null;
             try
             {
-                lstData.View = View.Details;
-
-                this.ReadParameters();
-                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
-
-                if (openFileDialog1.ShowDialog(this) != DialogResult.OK)
-                    return;
-
                 this.Cursor = Cursors.WaitCursor;
-
-                lstData.Items.Clear();
-
-                string filename = openFileDialog1.FileName;
                 float length = 0;
                 reader = new StreamReader(filename);
                 while (reader.ReadLine() != null)
                     length++;
                 reader.Close();
+                this.abort = false;
                 reader = new StreamReader(filename);
                 string line = null;
                 int pos = -1;
                 string cardid = null;
                 string deviceid = null;
                 BSPersonsInfo person = new BSPersonsInfo();
-                //writer.WriteLine("Data;PERSNO;Nome;CardNO;Local");
                 string[] vw = new string[8];
                 ListViewItem item = null;
                 string tipo = getInfoType();
-                pgBar.Visible = true;
+                grpBar.Visible = true;
+                grpBar.Text = String.Format("Arquivo: {0}", filename);
                 pgBar.Refresh();
                 float lineCount = 0;
                 while ((line = reader.ReadLine()) != null)
@@ -497,6 +494,14 @@ namespace FemsaTools
                     lineCount++;
                     pgBar.Value = (int)Math.Truncate((lineCount / length) * 100);
                     pgBar.Refresh();
+                    lstData.Refresh();
+                    grpBar.Refresh();
+
+                    System.Windows.Forms.Application.DoEvents();
+
+                    if (this.abort)
+                        break;
+
                     if (lineCount % 1000 == 0)
                         this.Refresh();
 
@@ -513,7 +518,7 @@ namespace FemsaTools
                         cardid = arr[6];
 
                         // exibe apenas os eventos relativos ao acesso
-                        if ((String.IsNullOrEmpty(tipo) && !String.IsNullOrEmpty(arr[6])) || (!String.IsNullOrEmpty(arr[7]) 
+                        if ((String.IsNullOrEmpty(tipo) && !String.IsNullOrEmpty(arr[6])) || (!String.IsNullOrEmpty(arr[7])
                             && !String.IsNullOrEmpty(arr[4]) && !String.IsNullOrEmpty(arr[6]) && line.IndexOf(tipo) > 0))
                         {
                             person = BSSQLPersons.GetPersonFromCardID(this.bisACEConnection, cardid);
@@ -545,9 +550,56 @@ namespace FemsaTools
                     }
                 }
                 reader.Close();
-                //writer.Close();
                 this.Cursor = Cursors.Default;
 
+                return !this.abort;
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                MessageBox.Show(ex.Message);
+                return !this.abort;
+            }
+            finally
+            {
+                this.Cursor = Cursors.Default;
+                if (reader != null)
+                    reader.Close();
+                pgBar.Visible = false;
+                if (lstData.Items.Count > 0)
+                    btnExport.Visible = true;
+            }
+        }
+        private void button4_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                lstData.View = View.Details;
+
+                this.ReadParameters();
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                if (!chkType.Checked)
+                {
+                    if (openFileDialog1.ShowDialog(this) != DialogResult.OK)
+                        return;
+
+                    lstData.Items.Clear();
+                    this.formatCSV(openFileDialog1.FileName);
+                }
+                else
+                {
+                    if (folderBrowserDialog1.ShowDialog() != DialogResult.OK)
+                        return;
+
+                    lstData.Items.Clear();
+                    string path = folderBrowserDialog1.SelectedPath;
+                    foreach (string filename in Directory.GetFiles(path))
+                    {
+                        if (!this.formatCSV(filename))
+                            break;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -556,7 +608,7 @@ namespace FemsaTools
             }
             finally
             {
-                pgBar.Visible = false;
+                grpBar.Visible = false;
                 if (lstData.Items.Count > 0)
                     btnExport.Visible = true;
             }
@@ -1461,6 +1513,12 @@ namespace FemsaTools
                 reader.Close();
 
             }
+        }
+
+        private void Form2_KeyDown(object sender, KeyEventArgs e)
+        {
+            this.abort = e.KeyCode == Keys.Escape;
+                
         }
     }
 }
