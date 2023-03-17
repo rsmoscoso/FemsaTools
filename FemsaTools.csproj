@@ -190,6 +190,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AMS\AMSEvent.cs" />
+    <Compile Include="AMS\AMSImport.cs" />
     <Compile Include="FemsaBlocks.cs" />
     <Compile Include="Form2.cs">
       <SubType>Form</SubType>

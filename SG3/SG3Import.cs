@@ -98,15 +98,15 @@ namespace FemsaTools.SG3
                     {
                         this.LogTask.Information("Nova pessoa.");
 
-                        string clientid = this.getClientidFromArea(liberacao.estabelecimento);
-                        if (!String.IsNullOrEmpty(clientid))
-                        {
-                            this.LogTask.Information(String.Format("Alterando a divisao para o ID: {0}", clientid));
-                            if (this.bisManager.SetClientID(clientid))
-                                this.LogTask.Information("ClientID alterado com sucesso.");
-                            else
-                                this.LogTask.Information(String.Format("Erro ao alterar o ClientID. {0}", this.bisManager.GetErrorMessage()));
-                        }
+                        //string clientid = this.getClientidFromArea(liberacao.estabelecimento);
+                        //if (!String.IsNullOrEmpty(clientid))
+                        //{
+                        //    this.LogTask.Information(String.Format("Alterando a divisao para o ID: {0}", clientid));
+                        //    if (this.bisManager.SetClientID(clientid))
+                        //        this.LogTask.Information("ClientID alterado com sucesso.");
+                        //    else
+                        //        this.LogTask.Information(String.Format("Erro ao alterar o ClientID. {0}", this.bisManager.GetErrorMessage()));
+                        //}
                         using (BSPersons persons = new BSPersons(this.bisManager, this.bisConnection))
                         {
                             persons.PERSNO = liberacao.cpf.Replace("'", "").Replace(".", "").Replace("-", "");

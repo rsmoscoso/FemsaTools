@@ -3,6 +3,7 @@ using AMSLib.ACE;
 using AMSLib.Common;
 using AMSLib.Manager;
 using AMSLib.SQL;
+using FemsaTools.AMS;
 using FemsaTools.SG3;
 using HzBISCommands;
 using HzLibConnection.Data;
@@ -489,13 +490,16 @@ namespace FemsaTools
                 grpBar.Text = String.Format("Arquivo: {0}", filename);
                 pgBar.Refresh();
                 float lineCount = 0;
+
+                this.LogTask.Information(String.Format("Arquivo: {0}", filename));
                 while ((line = reader.ReadLine()) != null)
                 {
-                    lineCount++;
+                    this.LogTask.Information(String.Format("{0} de {1}: {2}", (++lineCount).ToString(), length.ToString(), line));
+
                     pgBar.Value = (int)Math.Truncate((lineCount / length) * 100);
                     pgBar.Refresh();
-                    lstData.Refresh();
-                    grpBar.Refresh();
+                    if (lineCount % 1000 == 0)
+                        lstData.Refresh();
 
                     System.Windows.Forms.Application.DoEvents();
 
@@ -1291,11 +1295,6 @@ namespace FemsaTools
             }
         }
 
-        private void button14_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void button15_Click(object sender, EventArgs e)
         {
             StreamReader reader = null;
@@ -1493,25 +1492,77 @@ namespace FemsaTools
 
         private void button14_Click_1(object sender, EventArgs e)
         {
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            StreamWriter writer = null;
+            StreamReader reader = null;
+            try
             {
-                string filename = openFileDialog1.FileName;
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\AMS\\\\AMSTaskSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                if (txtFileName.isBlank())
+                    throw new Exception("Nome do arquivo em branco!");
+
+                if (folderBrowserDialog1.ShowDialog() != DialogResult.OK)
+                    return;
+
+                this.LogTask.Information(String.Format("Iniciando a importacao do diretorio: {0}", folderBrowserDialog1.SelectedPath));
+
                 string line = null;
                 DateTime dateTime = DateTime.Now;
+                string door = null;
+                string cardno = null;
+                string name = null;
+                string persno = null;
+                string company = null;
+                int pos = 0;
                 bool isDateTime = false;
                 int count = 0;
-                StreamReader reader = new StreamReader(filename);
-                while ((line = reader.ReadLine()) != null)
-                {
-                    string[] arr = line.Split(';');
-                    isDateTime = DateTime.TryParse(arr[0], out dateTime);
-                    if (isDateTime)
-                    {
-                        ++count;
-                    }
-                }
-                reader.Close();
+                float length = 0;
+                int lineCount = 0;
+                bool noCompany = false;
+                string lastLine = null;
+                AMSImport import = new AMSImport(this.LogTask);
 
+                foreach (string filename in Directory.GetFiles(folderBrowserDialog1.SelectedPath))
+                {
+                    this.LogTask.Information(String.Format("Arquivo: {0}", filename));
+
+                    length = 0;
+                    reader = new StreamReader(filename);
+                    while (reader.ReadLine() != null)
+                        length++;
+                    reader.Close();
+
+                    writer = new StreamWriter(txtFileName.Text, true);
+                    reader = new StreamReader(filename);
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        this.LogTask.Information(String.Format("{0} de {1}: {2}", (++lineCount).ToString(), length.ToString(), line));
+
+                        writer = import.parseLine(reader, writer, line);
+                    }
+                    reader.Close();
+                    writer.Close();
+                }
+
+                MessageBox.Show("Rotina finalizada.");
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (writer != null)
+                    writer.Close();
+                if (reader != null)
+                    reader.Close();
+                this.Cursor = Cursors.Default;
+
+                this.LogTask.Information("Rotina finalizada.");
             }
         }
 
@@ -1519,6 +1570,74 @@ namespace FemsaTools
         {
             this.abort = e.KeyCode == Keys.Escape;
                 
+        }
+
+        private void button17_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\ChangeToCommon.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.ReadParameters();
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                this.LogTask.Information("Conectando com o BIS.");
+                if (!this.BISManager.Connect())
+                    throw new Exception("Erro ao conectar com o BIS.");
+
+                this.LogTask.Information("BIS conectado com sucesso!");
+
+                this.LogTask.Information("Lendo os terceiros fora da Common.");
+                using (DataTable table = this.bisACEConnection.loadDataTable("select persid, persno, name = isnull(firstname, '') + ' ' + isnull(lastname, ''), Unidade = cli.Name from bsuser.persons per " +
+                    " inner join bsuser.clients cli on cli.clientid = per.clientid where per.status = 1 and PERSCLASSID = '0013B4437A2455E1' and grade = 'SG3' and persclass = 'E' and cli.clientid != 'FF0000D300000002'"))
+                {
+                    this.LogTask.Information(String.Format("{0} registros encontrados.", table.Rows.Count.ToString()));
+                    int rowCount = 1;
+                    BSPersons per = new BSPersons(this.BISManager, this.bisACEConnection);
+                    foreach(DataRow row in table.Rows)
+                    {
+                        this.LogTask.Information(String.Format("{0} de {1}. Persid: {2}, Persno: {3}, Nome: {4}, Unidade: {5}",
+                            (rowCount++).ToString(), table.Rows.Count.ToString(), row["persid"].ToString(), row["persno"].ToString(), row["name"].ToString(), row["Unidade"].ToString()));
+
+                        if (row["persno"].ToString().Length < 11)
+                        {
+                            this.LogTask.Information("CPF invalido.");
+                            continue;
+                        }
+                        this.LogTask.Information("Carregando a pessoa.");
+                        if (per.Load(row["persid"].ToString()))
+                        {
+                            this.LogTask.Information("Pessoa carregada com sucesso.");
+                            this.LogTask.Information("Alterando para Common.");
+                            if (per.ChangeClient("FF0000D300000002") == BS_SAVE.SUCCESS)
+                                this.LogTask.Information("Divisao alterada com sucesso.");
+                            else
+                                this.LogTask.Information("Erro ao alterar a divisao.");
+                        }
+                        else
+                            this.LogTask.Information("Erro ao carregar a pessoa.");
+                    }
+                }
+
+                this.Cursor = Cursors.WaitCursor;
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+            }
         }
     }
 }

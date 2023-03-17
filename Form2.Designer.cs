@@ -31,7 +31,6 @@ namespace FemsaTools
         {
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.button14 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.btnExecute = new System.Windows.Forms.Button();
@@ -82,6 +81,11 @@ namespace FemsaTools
             this.chkType = new System.Windows.Forms.CheckBox();
             this.grpBar = new System.Windows.Forms.GroupBox();
             this.pgBar = new System.Windows.Forms.ProgressBar();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.button14 = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
+            this.txtFileName = new System.Windows.Forms.TextBox();
+            this.button17 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -91,6 +95,7 @@ namespace FemsaTools
             this.groupBox2.SuspendLayout();
             this.tabPage4.SuspendLayout();
             this.grpBar.SuspendLayout();
+            this.tabPage5.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -98,6 +103,7 @@ namespace FemsaTools
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Controls.Add(this.tabPage4);
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
@@ -107,7 +113,6 @@ namespace FemsaTools
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.button14);
             this.tabPage1.Controls.Add(this.button3);
             this.tabPage1.Controls.Add(this.groupBox1);
             this.tabPage1.Controls.Add(this.button1);
@@ -115,20 +120,10 @@ namespace FemsaTools
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(768, 400);
+            this.tabPage1.Size = new System.Drawing.Size(768, 452);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Rotinas WFM";
             this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // button14
-            // 
-            this.button14.Location = new System.Drawing.Point(479, 195);
-            this.button14.Name = "button14";
-            this.button14.Size = new System.Drawing.Size(75, 23);
-            this.button14.TabIndex = 12;
-            this.button14.Text = "button14";
-            this.button14.UseVisualStyleBackColor = true;
-            this.button14.Click += new System.EventHandler(this.button14_Click_1);
             // 
             // button3
             // 
@@ -210,7 +205,7 @@ namespace FemsaTools
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(768, 400);
+            this.tabPage2.Size = new System.Drawing.Size(768, 452);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Administração";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -502,20 +497,21 @@ namespace FemsaTools
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.button17);
             this.tabPage4.Controls.Add(this.button11);
             this.tabPage4.Controls.Add(this.button10);
             this.tabPage4.Controls.Add(this.button9);
             this.tabPage4.Controls.Add(this.button7);
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(768, 400);
+            this.tabPage4.Size = new System.Drawing.Size(768, 452);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "SG3";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
             // button11
             // 
-            this.button11.Location = new System.Drawing.Point(420, 14);
+            this.button11.Location = new System.Drawing.Point(410, 14);
             this.button11.Name = "button11";
             this.button11.Size = new System.Drawing.Size(115, 35);
             this.button11.TabIndex = 13;
@@ -586,6 +582,55 @@ namespace FemsaTools
             this.pgBar.Step = 1;
             this.pgBar.TabIndex = 11;
             // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.txtFileName);
+            this.tabPage5.Controls.Add(this.label5);
+            this.tabPage5.Controls.Add(this.button14);
+            this.tabPage5.Location = new System.Drawing.Point(4, 22);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Size = new System.Drawing.Size(768, 452);
+            this.tabPage5.TabIndex = 4;
+            this.tabPage5.Text = "AMS";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // button14
+            // 
+            this.button14.Location = new System.Drawing.Point(358, 12);
+            this.button14.Name = "button14";
+            this.button14.Size = new System.Drawing.Size(75, 23);
+            this.button14.TabIndex = 15;
+            this.button14.Text = "Executar";
+            this.button14.UseVisualStyleBackColor = true;
+            this.button14.Click += new System.EventHandler(this.button14_Click_1);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(3, 17);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(77, 13);
+            this.label5.TabIndex = 16;
+            this.label5.Text = "Nome Arquivo:";
+            // 
+            // txtFileName
+            // 
+            this.txtFileName.Location = new System.Drawing.Point(83, 14);
+            this.txtFileName.Name = "txtFileName";
+            this.txtFileName.Size = new System.Drawing.Size(269, 20);
+            this.txtFileName.TabIndex = 17;
+            this.txtFileName.Text = "Export.csv";
+            // 
+            // button17
+            // 
+            this.button17.Location = new System.Drawing.Point(531, 14);
+            this.button17.Name = "button17";
+            this.button17.Size = new System.Drawing.Size(115, 35);
+            this.button17.TabIndex = 14;
+            this.button17.Text = "Change to Common";
+            this.button17.UseVisualStyleBackColor = true;
+            this.button17.Click += new System.EventHandler(this.button17_Click);
+            // 
             // Form2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -610,6 +655,8 @@ namespace FemsaTools
             this.groupBox2.PerformLayout();
             this.tabPage4.ResumeLayout(false);
             this.grpBar.ResumeLayout(false);
+            this.tabPage5.ResumeLayout(false);
+            this.tabPage5.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -664,10 +711,14 @@ namespace FemsaTools
         private System.Windows.Forms.Button button13;
         private System.Windows.Forms.Button button15;
         private System.Windows.Forms.Button button16;
-        private System.Windows.Forms.Button button14;
         private System.Windows.Forms.CheckBox chkType;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
         private System.Windows.Forms.GroupBox grpBar;
         private System.Windows.Forms.ProgressBar pgBar;
+        private System.Windows.Forms.TabPage tabPage5;
+        private System.Windows.Forms.TextBox txtFileName;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Button button14;
+        private System.Windows.Forms.Button button17;
     }
 }
