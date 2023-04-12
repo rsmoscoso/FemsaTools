@@ -62,6 +62,9 @@ namespace FemsaTools
             this.Local = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.Mensagem = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.grpBar = new System.Windows.Forms.GroupBox();
+            this.pgBar = new System.Windows.Forms.ProgressBar();
+            this.chkType = new System.Windows.Forms.CheckBox();
             this.btnExport = new System.Windows.Forms.Button();
             this.rdbAll = new System.Windows.Forms.RadioButton();
             this.button4 = new System.Windows.Forms.Button();
@@ -70,7 +73,14 @@ namespace FemsaTools
             this.rdbAuthorized = new System.Windows.Forms.RadioButton();
             this.rdbNotYet = new System.Windows.Forms.RadioButton();
             this.rdbAccess = new System.Windows.Forms.RadioButton();
+            this.tabPage5 = new System.Windows.Forms.TabPage();
+            this.txtFileName = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.button14 = new System.Windows.Forms.Button();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.button19 = new System.Windows.Forms.Button();
+            this.button18 = new System.Windows.Forms.Button();
+            this.button17 = new System.Windows.Forms.Button();
             this.button11 = new System.Windows.Forms.Button();
             this.button10 = new System.Windows.Forms.Button();
             this.button9 = new System.Windows.Forms.Button();
@@ -78,14 +88,7 @@ namespace FemsaTools
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.chkType = new System.Windows.Forms.CheckBox();
-            this.grpBar = new System.Windows.Forms.GroupBox();
-            this.pgBar = new System.Windows.Forms.ProgressBar();
-            this.tabPage5 = new System.Windows.Forms.TabPage();
-            this.button14 = new System.Windows.Forms.Button();
-            this.label5 = new System.Windows.Forms.Label();
-            this.txtFileName = new System.Windows.Forms.TextBox();
-            this.button17 = new System.Windows.Forms.Button();
+            this.button20 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -93,9 +96,9 @@ namespace FemsaTools
             this.groupBox3.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.tabPage4.SuspendLayout();
             this.grpBar.SuspendLayout();
             this.tabPage5.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -195,6 +198,7 @@ namespace FemsaTools
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.button20);
             this.tabPage2.Controls.Add(this.button16);
             this.tabPage2.Controls.Add(this.button15);
             this.tabPage2.Controls.Add(this.button13);
@@ -416,6 +420,35 @@ namespace FemsaTools
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Verificar INFO";
             // 
+            // grpBar
+            // 
+            this.grpBar.Controls.Add(this.pgBar);
+            this.grpBar.Location = new System.Drawing.Point(6, 76);
+            this.grpBar.Name = "grpBar";
+            this.grpBar.Size = new System.Drawing.Size(512, 60);
+            this.grpBar.TabIndex = 13;
+            this.grpBar.TabStop = false;
+            this.grpBar.Text = "groupBox4";
+            this.grpBar.Visible = false;
+            // 
+            // pgBar
+            // 
+            this.pgBar.Location = new System.Drawing.Point(20, 31);
+            this.pgBar.Name = "pgBar";
+            this.pgBar.Size = new System.Drawing.Size(473, 23);
+            this.pgBar.Step = 1;
+            this.pgBar.TabIndex = 11;
+            // 
+            // chkType
+            // 
+            this.chkType.AutoSize = true;
+            this.chkType.Location = new System.Drawing.Point(453, 19);
+            this.chkType.Name = "chkType";
+            this.chkType.Size = new System.Drawing.Size(65, 17);
+            this.chkType.TabIndex = 12;
+            this.chkType.Text = "Diretório";
+            this.chkType.UseVisualStyleBackColor = true;
+            // 
             // btnExport
             // 
             this.btnExport.Location = new System.Drawing.Point(257, 42);
@@ -495,8 +528,49 @@ namespace FemsaTools
             this.rdbAccess.Text = "Acesso";
             this.rdbAccess.UseVisualStyleBackColor = true;
             // 
+            // tabPage5
+            // 
+            this.tabPage5.Controls.Add(this.txtFileName);
+            this.tabPage5.Controls.Add(this.label5);
+            this.tabPage5.Controls.Add(this.button14);
+            this.tabPage5.Location = new System.Drawing.Point(4, 22);
+            this.tabPage5.Name = "tabPage5";
+            this.tabPage5.Size = new System.Drawing.Size(768, 452);
+            this.tabPage5.TabIndex = 4;
+            this.tabPage5.Text = "AMS";
+            this.tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // txtFileName
+            // 
+            this.txtFileName.Location = new System.Drawing.Point(83, 14);
+            this.txtFileName.Name = "txtFileName";
+            this.txtFileName.Size = new System.Drawing.Size(269, 20);
+            this.txtFileName.TabIndex = 17;
+            this.txtFileName.Text = "Export.csv";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(3, 17);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(77, 13);
+            this.label5.TabIndex = 16;
+            this.label5.Text = "Nome Arquivo:";
+            // 
+            // button14
+            // 
+            this.button14.Location = new System.Drawing.Point(358, 12);
+            this.button14.Name = "button14";
+            this.button14.Size = new System.Drawing.Size(75, 23);
+            this.button14.TabIndex = 15;
+            this.button14.Text = "Executar";
+            this.button14.UseVisualStyleBackColor = true;
+            this.button14.Click += new System.EventHandler(this.button14_Click_1);
+            // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.button19);
+            this.tabPage4.Controls.Add(this.button18);
             this.tabPage4.Controls.Add(this.button17);
             this.tabPage4.Controls.Add(this.button11);
             this.tabPage4.Controls.Add(this.button10);
@@ -508,6 +582,36 @@ namespace FemsaTools
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "SG3";
             this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // button19
+            // 
+            this.button19.Location = new System.Drawing.Point(147, 55);
+            this.button19.Name = "button19";
+            this.button19.Size = new System.Drawing.Size(121, 35);
+            this.button19.TabIndex = 16;
+            this.button19.Text = "Check Cartão SG3";
+            this.button19.UseVisualStyleBackColor = true;
+            this.button19.Click += new System.EventHandler(this.button19_Click);
+            // 
+            // button18
+            // 
+            this.button18.Location = new System.Drawing.Point(13, 55);
+            this.button18.Name = "button18";
+            this.button18.Size = new System.Drawing.Size(121, 35);
+            this.button18.TabIndex = 15;
+            this.button18.Text = "Excluir CPF Nulo";
+            this.button18.UseVisualStyleBackColor = true;
+            this.button18.Click += new System.EventHandler(this.button18_Click);
+            // 
+            // button17
+            // 
+            this.button17.Location = new System.Drawing.Point(531, 14);
+            this.button17.Name = "button17";
+            this.button17.Size = new System.Drawing.Size(115, 35);
+            this.button17.TabIndex = 14;
+            this.button17.Text = "Change to Common";
+            this.button17.UseVisualStyleBackColor = true;
+            this.button17.Click += new System.EventHandler(this.button17_Click);
             // 
             // button11
             // 
@@ -553,83 +657,16 @@ namespace FemsaTools
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // chkType
+            // button20
             // 
-            this.chkType.AutoSize = true;
-            this.chkType.Location = new System.Drawing.Point(453, 19);
-            this.chkType.Name = "chkType";
-            this.chkType.Size = new System.Drawing.Size(65, 17);
-            this.chkType.TabIndex = 12;
-            this.chkType.Text = "Diretório";
-            this.chkType.UseVisualStyleBackColor = true;
-            // 
-            // grpBar
-            // 
-            this.grpBar.Controls.Add(this.pgBar);
-            this.grpBar.Location = new System.Drawing.Point(6, 76);
-            this.grpBar.Name = "grpBar";
-            this.grpBar.Size = new System.Drawing.Size(512, 60);
-            this.grpBar.TabIndex = 13;
-            this.grpBar.TabStop = false;
-            this.grpBar.Text = "groupBox4";
-            this.grpBar.Visible = false;
-            // 
-            // pgBar
-            // 
-            this.pgBar.Location = new System.Drawing.Point(20, 31);
-            this.pgBar.Name = "pgBar";
-            this.pgBar.Size = new System.Drawing.Size(473, 23);
-            this.pgBar.Step = 1;
-            this.pgBar.TabIndex = 11;
-            // 
-            // tabPage5
-            // 
-            this.tabPage5.Controls.Add(this.txtFileName);
-            this.tabPage5.Controls.Add(this.label5);
-            this.tabPage5.Controls.Add(this.button14);
-            this.tabPage5.Location = new System.Drawing.Point(4, 22);
-            this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Size = new System.Drawing.Size(768, 452);
-            this.tabPage5.TabIndex = 4;
-            this.tabPage5.Text = "AMS";
-            this.tabPage5.UseVisualStyleBackColor = true;
-            // 
-            // button14
-            // 
-            this.button14.Location = new System.Drawing.Point(358, 12);
-            this.button14.Name = "button14";
-            this.button14.Size = new System.Drawing.Size(75, 23);
-            this.button14.TabIndex = 15;
-            this.button14.Text = "Executar";
-            this.button14.UseVisualStyleBackColor = true;
-            this.button14.Click += new System.EventHandler(this.button14_Click_1);
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(3, 17);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(77, 13);
-            this.label5.TabIndex = 16;
-            this.label5.Text = "Nome Arquivo:";
-            // 
-            // txtFileName
-            // 
-            this.txtFileName.Location = new System.Drawing.Point(83, 14);
-            this.txtFileName.Name = "txtFileName";
-            this.txtFileName.Size = new System.Drawing.Size(269, 20);
-            this.txtFileName.TabIndex = 17;
-            this.txtFileName.Text = "Export.csv";
-            // 
-            // button17
-            // 
-            this.button17.Location = new System.Drawing.Point(531, 14);
-            this.button17.Name = "button17";
-            this.button17.Size = new System.Drawing.Size(115, 35);
-            this.button17.TabIndex = 14;
-            this.button17.Text = "Change to Common";
-            this.button17.UseVisualStyleBackColor = true;
-            this.button17.Click += new System.EventHandler(this.button17_Click);
+            this.button20.Location = new System.Drawing.Point(282, 129);
+            this.button20.Name = "button20";
+            this.button20.Size = new System.Drawing.Size(150, 76);
+            this.button20.TabIndex = 17;
+            this.button20.Text = "button20";
+            this.button20.UseVisualStyleBackColor = true;
+            this.button20.Visible = false;
+            this.button20.Click += new System.EventHandler(this.button20_Click);
             // 
             // Form2
             // 
@@ -653,10 +690,10 @@ namespace FemsaTools
             this.tabPage3.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            this.tabPage4.ResumeLayout(false);
             this.grpBar.ResumeLayout(false);
             this.tabPage5.ResumeLayout(false);
             this.tabPage5.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -720,5 +757,8 @@ namespace FemsaTools
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button button14;
         private System.Windows.Forms.Button button17;
+        private System.Windows.Forms.Button button18;
+        private System.Windows.Forms.Button button19;
+        private System.Windows.Forms.Button button20;
     }
 }

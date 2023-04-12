@@ -1083,7 +1083,7 @@ namespace FemsaTools
             {
                 this.LogTask.Information(String.Format("Rotina iniciada as {0}", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
 
-                reader = new StreamReader(@"c:\temp\bosch_3");
+                reader = new StreamReader(@"c:\temp\bosch");
 
                 string line = null;
                 BSEventsInfo events = null;
