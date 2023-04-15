@@ -544,9 +544,9 @@ namespace FemsaTools
                                     vw[4] = person.NAME;
                                     vw[5] = person.CARDNO;
                                     vw[6] = devinfo.DESCRIPTION;
-                                    vw[8] = devinfo.DISPLAYTEXT;
-                                    vw[9] = devinfo.CLIENTID;
-                                    vw[10] = !String.IsNullOrEmpty(arr[7]) ? arr[7] : "Indefinido";
+                                    vw[7] = devinfo.DISPLAYTEXT;
+                                    vw[8] = devinfo.CLIENTID;
+                                    vw[9] = !String.IsNullOrEmpty(arr[7]) ? arr[7] : "Indefinido";
                                     item = new ListViewItem(vw);
                                     lstData.Items.Add(item);
                                 }
@@ -633,7 +633,7 @@ namespace FemsaTools
                     return;
                 this.Cursor = Cursors.WaitCursor;
                 writer = new StreamWriter(this.saveFileDialog1.FileName);
-                writer.WriteLine("Data;Persid;Tipo;Documento;Nome;Cartao;Local;Mensagem");
+                writer.WriteLine("Data;Persid;Tipo;Documento;Nome;Cartao;Local;DisplayText;Clientid;Mensagem");
                 foreach (ListViewItem item in lstData.Items)
                     writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[2].Text, item.SubItems[3].Text, 
                         item.SubItems[4].Text, item.SubItems[5].Text, item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[8].Text, item.SubItems[9].Text));
