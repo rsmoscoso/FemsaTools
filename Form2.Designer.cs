@@ -39,6 +39,7 @@ namespace FemsaTools
             this.button1 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.button20 = new System.Windows.Forms.Button();
             this.button16 = new System.Windows.Forms.Button();
             this.button15 = new System.Windows.Forms.Button();
             this.button13 = new System.Windows.Forms.Button();
@@ -88,7 +89,8 @@ namespace FemsaTools
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.button20 = new System.Windows.Forms.Button();
+            this.Displaytext = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Clientid = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -213,6 +215,17 @@ namespace FemsaTools
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Administração";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // button20
+            // 
+            this.button20.Location = new System.Drawing.Point(282, 129);
+            this.button20.Name = "button20";
+            this.button20.Size = new System.Drawing.Size(150, 76);
+            this.button20.TabIndex = 17;
+            this.button20.Text = "button20";
+            this.button20.UseVisualStyleBackColor = true;
+            this.button20.Visible = false;
+            this.button20.Click += new System.EventHandler(this.button20_Click);
             // 
             // button16
             // 
@@ -352,6 +365,8 @@ namespace FemsaTools
             this.Nome,
             this.CardNO,
             this.Local,
+            this.Displaytext,
+            this.Clientid,
             this.Mensagem});
             this.lstData.HideSelection = false;
             this.lstData.Location = new System.Drawing.Point(12, 185);
@@ -657,16 +672,15 @@ namespace FemsaTools
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // button20
+            // Displaytext
             // 
-            this.button20.Location = new System.Drawing.Point(282, 129);
-            this.button20.Name = "button20";
-            this.button20.Size = new System.Drawing.Size(150, 76);
-            this.button20.TabIndex = 17;
-            this.button20.Text = "button20";
-            this.button20.UseVisualStyleBackColor = true;
-            this.button20.Visible = false;
-            this.button20.Click += new System.EventHandler(this.button20_Click);
+            this.Displaytext.DisplayIndex = 8;
+            this.Displaytext.Text = "Displaytext";
+            // 
+            // Clientid
+            // 
+            this.Clientid.DisplayIndex = 9;
+            this.Clientid.Text = "Clientid";
             // 
             // Form2
             // 
@@ -760,5 +774,7 @@ namespace FemsaTools
         private System.Windows.Forms.Button button18;
         private System.Windows.Forms.Button button19;
         private System.Windows.Forms.Button button20;
+        private System.Windows.Forms.ColumnHeader Displaytext;
+        private System.Windows.Forms.ColumnHeader Clientid;
     }
 }

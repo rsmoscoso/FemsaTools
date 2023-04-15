@@ -246,20 +246,29 @@ namespace FemsaTools.SG3
                     {
                         this.LogTask.Information(String.Format("Pesquisando a base: {0}", host.Username));
                         this.LogTask.Information(String.Format("{0}/{1}", host.Host, host.LoginCommand), new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
-                        HttpResponseMessage message = await client.PostAsync(String.Format("{0}/{1}", host.Host, host.LoginCommand), new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
-                        if (message.StatusCode != System.Net.HttpStatusCode.OK)
+                        try
                         {
-                            this.LogTask.Information(String.Format("Message: {0}", message.StatusCode.ToString()));
+                            // Send the request and get the response
+                            client.Timeout = TimeSpan.FromMinutes(10);
+                            HttpResponseMessage message = await client.PostAsync(String.Format("{0}/{1}", host.Host, host.LoginCommand), new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json"));
+                            if (message.StatusCode != System.Net.HttpStatusCode.OK)
+                            {
+                                this.LogTask.Information(String.Format("Status: {0}", message.StatusCode.ToString()));
+                                continue;
+                            }
+                            string response = await message.Content.ReadAsStringAsync();
+                            if (String.IsNullOrEmpty(response))
+                            {
+                                this.LogTask.Information("Nenuma informacao encontrada.");
+                                continue;
+                            }
+                            user = (User)JsonConvert.DeserializeObject<User>(response);
+                        }
+                        catch (HttpRequestException ex)
+                        {
+                            this.LogTask.Information(String.Format("Message: {0}", ex.Message.ToString()));
                             continue;
                         }
-                        string response = await message.Content.ReadAsStringAsync();
-                        if (String.IsNullOrEmpty(response))
-                        {
-                            this.LogTask.Information("Nenuma informacao encontrada.");
-                            continue;
-                        }
-
-                        user = (User)JsonConvert.DeserializeObject<User>(response);
 
                         var httpClient = new HttpClient();
 

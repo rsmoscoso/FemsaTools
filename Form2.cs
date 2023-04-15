@@ -487,7 +487,7 @@ namespace FemsaTools
                 string cardid = null;
                 string deviceid = null;
                 BSPersonsInfo person = new BSPersonsInfo();
-                string[] vw = new string[8];
+                string[] vw = new string[11];
                 ListViewItem item = null;
                 string tipo = getInfoType();
                 grpBar.Visible = true;
@@ -534,7 +534,7 @@ namespace FemsaTools
                                 continue;
                             if (String.IsNullOrEmpty(txtREInfo.Text) || !String.IsNullOrEmpty(txtREInfo.Text) && person.DOCUMENT.Equals(txtREInfo.Text))
                             {
-                                person.RESERVE1 = BSSQLDevices.GetDescription(this.bisACEConnection, deviceid);
+                                BSDevicesInfo devinfo = BSSQLDevices.GetAllDescription(this.bisACEConnection, deviceid);
                                 if (person != null)
                                 {
                                     vw[0] = arr[0].Substring(pos + 1, (arr[0].Length - (pos + 1))) + " " + arr[1];
@@ -543,8 +543,10 @@ namespace FemsaTools
                                     vw[3] = person.DOCUMENT;
                                     vw[4] = person.NAME;
                                     vw[5] = person.CARDNO;
-                                    vw[6] = person.RESERVE1;
-                                    vw[7] = !String.IsNullOrEmpty(arr[7]) ? arr[7] : "Indefinido";
+                                    vw[6] = devinfo.DESCRIPTION;
+                                    vw[8] = devinfo.DISPLAYTEXT;
+                                    vw[9] = devinfo.CLIENTID;
+                                    vw[10] = !String.IsNullOrEmpty(arr[7]) ? arr[7] : "Indefinido";
                                     item = new ListViewItem(vw);
                                     lstData.Items.Add(item);
                                 }
@@ -633,8 +635,8 @@ namespace FemsaTools
                 writer = new StreamWriter(this.saveFileDialog1.FileName);
                 writer.WriteLine("Data;Persid;Tipo;Documento;Nome;Cartao;Local;Mensagem");
                 foreach (ListViewItem item in lstData.Items)
-                    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[2].Text, item.SubItems[3].Text, 
-                        item.SubItems[4].Text, item.SubItems[5].Text, item.SubItems[6].Text, item.SubItems[7].Text));
+                    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[2].Text, item.SubItems[3].Text, 
+                        item.SubItems[4].Text, item.SubItems[5].Text, item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[8].Text, item.SubItems[9].Text));
 
                 writer.Close();
                 this.Cursor = Cursors.Default;
