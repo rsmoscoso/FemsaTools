@@ -62,7 +62,8 @@ namespace FemsaTools.SG3
             SUCCESS = 0,
             ERROR = 1,
             DELETE = 2,
-            EXIST = 3
+            EXIST = 3,
+            NODELETE = 4
         }
         #endregion
 
@@ -448,6 +449,11 @@ namespace FemsaTools.SG3
                                 retval = new SG3Info() { Persno = persons.PERSNO, Nome = liberacao.colaborador, Status = RE_STATUS.ERROR };
                             }
                         }
+                    }
+                    else
+                    {
+                        this.LogTask.Information("Pessoa nao encontrada.");
+                        retval = new SG3Info() { Persno = liberacao.cpf, Nome = liberacao.colaborador, Status = RE_STATUS.NODELETE };
                     }
                 }
 
