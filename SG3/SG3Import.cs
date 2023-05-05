@@ -78,7 +78,6 @@ namespace FemsaTools.SG3
             try
             {
                 string mails = "melina.terencio@kof.com.mx;cristiane.msantos@kof.com.mx;tatiane.lobo@kof.com.mx;ronaldo.moscoso@grupoorion.com.br";
-                mails = "ronaldomoscoso@gmail.com";
                 HzConexao cBIS = new HzConexao(@"10.122.122.100\BIS_2021", "femsasql", "femsasql", "BISEventLog", "System.Data.SqlClient");
                 string sql = String.Format("exec msdb..sp_send_dbmail @profile_name = 'Femsa', @recipients = '{0}', @subject = '{1}', @body = '{2}', @body_format = 'html'",
                     mails, subject, body);

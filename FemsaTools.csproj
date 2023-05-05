@@ -51,10 +51,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>D3F14C167EEF3ED27528F7FF8CD7D85AEF3AEFC9</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>58A0C551E4520F106EF3EB301BE32329158FBEEA</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>FemsaTools_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>FemsaTools_1_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -261,6 +261,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="FemsaTools_1_TemporaryKey.pfx" />
     <None Include="FemsaTools_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
