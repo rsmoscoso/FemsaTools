@@ -18,11 +18,14 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
+using System.Reflection;
 using System.Runtime.ConstrainedExecution;
 using System.Security.Policy;
+using System.ServiceModel.Channels;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -37,12 +40,28 @@ namespace FemsaTools
 {
     public partial class Form2 : Form
     {
+        private enum IMPORT
+        {
+            IMPORT_SAMERE = 0,
+            IMPORT_DIFFRE = 1,
+            IMPORT_NEW = 2,
+            IMPORT_NOPHOTO = 3,
+            IMPORT_UNDELETE = 4,
+            IMPORT_DISABLED = 5,
+            IMPORT_DOUBLERE = 6,
+            IMPORT_NONE = 7,
+            IMPORT_DELETE = 8
+        }
 
         #region Variables
         /// <summary>
         /// Log das tarefas.
         /// </summary>
         public ILogger LogTask { get; set; }
+        /// <summary>
+        /// Log das tarefas da alteracao de divisao.
+        /// </summary>
+        public ILogger LogTaskCD { get; set; }
         /// <summary>
         /// Log das tarefas.
         /// </summary>
@@ -221,6 +240,10 @@ namespace FemsaTools
 
             this.LogTask = new LoggerConfiguration()
                 .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Block\\BlockTaskLog.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                .CreateLogger();
+
+            this.LogTaskCD = new LoggerConfiguration()
+                .WriteTo.File("c:\\Horizon\\Log\\Main\\General\\ChangeDivision.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                 .CreateLogger();
 
             this.LogTaskSolo = new LoggerConfiguration()
@@ -521,9 +544,9 @@ namespace FemsaTools
                     try
                     {
                         string id = arr[0].Substring(0, pos);
-                        DateTime date = DateTime.Parse(arr[1] + " " + arr[2]);
-                        deviceid = arr[4];
-                        cardid = arr[6];
+                        DateTime date = DateTime.Parse(arr[0].Substring(pos + 1, arr[0].Length - (pos + 1)) + " " + arr[1]);
+                        deviceid = arr[3];
+                        cardid = arr[5];
 
                         // exibe apenas os eventos relativos ao acesso
                         if ((String.IsNullOrEmpty(tipo) && !String.IsNullOrEmpty(arr[6])) || (!String.IsNullOrEmpty(arr[7])
@@ -546,7 +569,7 @@ namespace FemsaTools
                                     vw[6] = devinfo.DESCRIPTION;
                                     vw[7] = devinfo.DISPLAYTEXT;
                                     vw[8] = devinfo.CLIENTID;
-                                    vw[9] = !String.IsNullOrEmpty(arr[7]) ? arr[7] : "Indefinido";
+                                    vw[9] = !String.IsNullOrEmpty(arr[6]) ? arr[6] : "Indefinido";
                                     item = new ListViewItem(vw);
                                     lstData.Items.Add(item);
                                 }
@@ -639,7 +662,42 @@ namespace FemsaTools
                         item.SubItems[4].Text, item.SubItems[5].Text, item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[8].Text, item.SubItems[9].Text));
 
                 writer.Close();
+
+                string cmpipamc = "";
+                string descricao = "";
+                string displaytextcustomer = "";
+                string idnumber = "";
+                string sql = null;
+                foreach (ListViewItem item in lstData.Items)
+                {
+                    using (DataTable table = this.bisACEConnection.loadDataTable(String.Format("select cmpIpAMC, dev.description from [bosch.eventdb].dbo.tblAMC amc inner join acedb.bsuser.devices dev on dev.parentdevice = amc.cmpIDAmc where dev.displaytext = '{0}'", item.SubItems[6].Text)))
+                    {
+                        if (table.Rows.Count > 0)
+                        {
+                            cmpipamc = table.Rows[0]["cmpipamc"].ToString();
+                            descricao = table.Rows[0]["description"].ToString();
+
+                        }
+                    }
+
+                    using (DataTable table = this.bisACEConnection.loadDataTable(String.Format("select displaytextcustomer, idnumber from acedb.bsuser.persons per inner join bsuser.persclasses cla on cla.persclassid = per.persclassid where per.persid = '{0}'", item.SubItems[1].Text)))
+                    {
+                        if (table.Rows.Count > 0)
+                        {
+                            displaytextcustomer = table.Rows[0]["displaytextcustomer"].ToString();
+                            idnumber = table.Rows[0]["idnumber"].ToString();
+
+                        }
+                    }
+
+                    sql = String.Format("insert into [Bosch.EventDb].dbo.tblEventos values ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}', '{10}')", item.SubItems[0].Text, item.SubItems[3].Text, item.SubItems[4].Text, item.SubItems[6].Text, descricao,
+                        displaytextcustomer, "16777985", idnumber, item.SubItems[1].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc);
+                    this.bisACEConnection.executeProcedure(sql);
+                }
+
                 this.Cursor = Cursors.Default;
+
+                MessageBox.Show("ok!");
             }
             catch (Exception ex)
             {
@@ -673,18 +731,15 @@ namespace FemsaTools
 
         private void button5_Click(object sender, EventArgs e)
         {
+            string message = null;
             try
             {
                 string authstr = null;
                 string persid = null;
                 List<string> authString = new List<string>();
                 List<BSAuthorizationInfo> auths = null;
-                this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\ChangeDivision.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
-                    .CreateLogger();
-
                 this.Cursor = Cursors.WaitCursor;
-                this.LogTask.Information(String.Format("Pesquisando o PERSNO: {0}", txtREDivisao.Text));
+                this.LogTaskCD.Information(String.Format("Pesquisando o PERSNO: {0}", txtREDivisao.Text));
                 using (DataTable table = this.bisACEConnection.loadDataTable(String.Format("select persid from bsuser.persons where persno = '{0}' and status = 1", txtREDivisao.Text)))
                 {
                     if (table == null || table.Rows.Count < 1)
@@ -693,11 +748,11 @@ namespace FemsaTools
                     persid = table.Rows[0]["persid"].ToString();
                     auths = BSSQLPersons.GetAllAuthorizations(this.bisACEConnection, table.Rows[0]["persid"].ToString());
                     if (auths == null || auths.Count < 1)
-                        this.LogTask.Information("Nao ha autorizacoes para esse colaborador.");
+                        this.LogTaskCD.Information("Nao ha autorizacoes para esse colaborador.");
                     else
                     {
                         authString.Clear();
-                        this.LogTask.Information(String.Format("{0} Autorizacoes encontradas.", table.Rows.Count.ToString()));
+                        this.LogTaskCD.Information(String.Format("{0} Autorizacoes encontradas.", table.Rows.Count.ToString()));
                         foreach (BSAuthorizationInfo auth in auths)
                         {
                             authString.Add(auth.AUTHID);
@@ -707,20 +762,20 @@ namespace FemsaTools
 
                 int totalBefore = auths != null ? auths.Count : 0;
                 int totalAfter = -1;
-
+                message = "Erro Generico. Verifiar o log.";
                 using (BSPersons persons = new BSPersons(this.BISManager, this.bisACEConnection))
                 {
-                    this.LogTask.Information("Carregando a pessoa.");
+                    this.LogTaskCD.Information("Carregando a pessoa.");
                     if (persons.Load(txtREDivisao.Text, BS_STATUS.ACTIVE))
                     {
-                        this.LogTask.Information("Pessoa carregada com sucesso.");
-                        this.LogTask.Information("Alterando a divisao.");
+                        this.LogTaskCD.Information("Pessoa carregada com sucesso.");
+                        this.LogTaskCD.Information("Alterando a divisao.");
                         if (persons.ChangeClient(((HzItem)cmbDivisao.SelectedItem).value) == BS_SAVE.SUCCESS)
                         {
-                            this.LogTask.Information("Divisao alterada com sucesso.");
-                            this.LogTask.Information("Atribuindo as autorizacoes");
+                            this.LogTaskCD.Information("Divisao alterada com sucesso.");
+                            this.LogTaskCD.Information("Atribuindo as autorizacoes");
                             if (persons.SetAuthorization(authString.ToArray()) == BS_ADD.SUCCESS)
-                                this.LogTask.Information("Autorizacoes atribuidas com sucesso.");
+                                this.LogTaskCD.Information("Autorizacoes atribuidas com sucesso.");
 
                             auths = BSSQLPersons.GetAllAuthorizations(this.bisACEConnection, persid);
                             totalAfter = auths != null ? auths.Count : 0;
@@ -731,32 +786,24 @@ namespace FemsaTools
                             this.bisACEConnection.executeProcedure(String.Format("update bsuser.acpersons set clientid = '{0}' where persid = '{1}'", ((HzItem)cmbDivisao.SelectedItem).value,
                                 persons.GetPersonId()));
 
-                            this.LogTask.Information(String.Format("Total Antes: {0}, Total Depois: {1}. Alteracao concluida com sucesso.", totalBefore.ToString(), totalAfter.ToString()));
+                            this.LogTaskCD.Information(message = String.Format("Total Antes: {0}, Total Depois: {1}. Alteracao concluida com sucesso.", totalBefore.ToString(), totalAfter.ToString()));
                         }
                         else
-                            this.LogTask.Information("Erro ao alterar a divisao.");
+                            this.LogTaskCD.Information(message = "Erro ao alterar a divisao.");
                     }
                     else
-                        this.LogTask.Information("Erro ao carregar a pessoa.");
-
-                    MessageBox.Show("Alteração concluída com sucesso!");
+                        this.LogTaskCD.Information(message = "Erro ao carregar a pessoa.");
                 }
             }
             catch (Exception ex)
             {
                 this.Cursor = Cursors.Default;
-                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+                this.LogTaskCD.Information(String.Format("Erro: {0}", ex.Message));
             }
             finally
             {
                 this.Cursor = Cursors.Default;
-                this.LogTask.Information("Descontecando o BIS.");
-                if (this.BISManager.Disconnect())
-                    this.LogTask.Information("BIS desconectado com sucesso.");
-                else
-                    this.LogTask.Information("Erro ao desconectar com o BIS.");
-
-                this.LogTask.Information("Rotina finalizada..");
+                MessageBox.Show(message);
             }
         }
 
@@ -1783,6 +1830,723 @@ namespace FemsaTools
             }
             finally
             {
+                this.LogTask.Information("Rotina finalizada.");
+            }
+        }
+
+        private void Form2_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            this.LogTask.Information("Descontecando o BIS.");
+            if (this.BISManager.Disconnect())
+                this.LogTask.Information("BIS desconectado com sucesso.");
+            else
+                this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+            this.LogTask.Information("Rotina finalizada..");
+        }
+
+        /// <summary>
+        /// Compara o PERSNO do ID desejado com outro valor de PERSNO.
+        /// </summary>
+        /// <param name="persid">ID da pessoa.</param>
+        /// <param name="persno">Persno a ser comparado.</param>
+        /// <returns></returns>
+        private bool? doubleCheckRE(string persid, string persno)
+        {
+            try
+            {
+                string persnocheck = BSSQLPersons.GetPersno(this.bisConnection, persno);
+                return !String.IsNullOrEmpty(persnocheck).Equals(persno);
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Apaga a pessoa e seus cartões.
+        /// </summary>
+        /// <param name="persid">ID da pessoa.</param>
+        /// <returns></returns>
+        private bool deletePerson(string persid)
+        {
+            try
+            {
+                BSPersons per = new BSPersons(this.BISManager, this.bisConnection);
+                this.LogTask.Information("Excluindo o colaborador...");
+                if (per.DeletePerson(persid) == BS_ADD.SUCCESS)
+                    this.LogTask.Information("Colaborador excluido com sucesso.");
+                else
+                    this.LogTask.Information(String.Format("Erro ao excluir o colaborador: {0}", per.GetErrorMessage()));
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(ex, ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Atualiza o idnumber para o último cardid utilizado 
+        /// para registros duplicados.
+        /// </summary>
+        /// <param name="persid">ID da pessoa.</param>
+        /// <param name="cardid">Id do cartão.</param>
+        /// <returns></returns>
+        private bool updateCardidDouble(string persid, string cardid)
+        {
+            bool retval = false;
+            try
+            {
+                this.LogTask.Information(String.Format("Alterando o idnumber para o ultimo cardid utilziado. CardID: {0}", cardid));
+                string sql = String.Format("update bsuser.persons set idnumber = '{0}' where persid = '{1}'",
+                    cardid, persid);
+                if (this.bisConnection.executeProcedure(sql))
+                    this.LogTask.Information("Registro gravado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao gravar o registro.");
+                return retval;
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+                return retval;
+            }
+        }
+        /// <summary>
+        /// Atualiza os dados do SQL sem necessidade de broadcast
+        /// para as controladoras.
+        /// </summary>
+        /// <param name="personsinfo">Classe com as informações da pessoa.</param>
+        /// <returns></returns>
+        private bool updateOnlySQL(BSPersonsInfoFEMSA personsinfo)
+        {
+            bool retval = false;
+            try
+            {
+                this.LogTask.Information("Alterando o registro existente diretamente no ACEDB.");
+                string sql = String.Format("update bsuser.persons set departmattend = '{0}', department = '{1}', costcentre = '{2}', centraloffice = '{3}', job = '{4}', cityofbirth = '{5}', attendant = '{6}' where persid = '{7}'",
+                    Global.getString(personsinfo.DEPARTMATTEND, 40), Global.getString(personsinfo.DEPARTMENT, 40), personsinfo.ACTIVITY, Global.getString(personsinfo.CENTRALOFFICE, 40),
+                    Global.getString(personsinfo.JOB, 40), Global.getString(personsinfo.COSTCENTRE, 32), Global.getString(personsinfo.DESCRICAOAREA, 40), personsinfo.PERSID);
+                if (this.bisConnection.executeProcedure(sql))
+                    this.LogTask.Information("Registro gravado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao gravar o registro.");
+
+                return retval;
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+                return retval;
+            }
+        }
+
+
+        /// <summary>
+        /// Verifica a existência do RE.
+        /// </summary>
+        /// <param name="re">RE do colaborador.</param>
+        /// <returns></returns>
+        private IMPORT existRE(string persno, string nome, string status, out BSEventsInfo events)
+        {
+            IMPORT retval = IMPORT.IMPORT_NONE;
+            events = new BSEventsInfo();
+            try
+            {
+                this.LogTask.Information(String.Format("Verificando Nome: {0}, RE: {1}, Status SAP: {2}", nome, persno, status));
+
+                using (DataTable tbl = BSSQLPersons.GetID(this.bisACEConnection, persno, BS_STATUS.ACTIVE))
+                {
+                    if (tbl != null && tbl.Rows.Count == 1)
+                    {
+                        if (tbl.Rows[0]["status"].ToString().Equals("0") && status.ToLower().Equals("saiu da empresa"))
+                        {
+                            retval = IMPORT.IMPORT_DISABLED;
+                            this.LogTask.Information("Pessoa excluida.");
+                        }
+                        else if (tbl.Rows[0]["status"].ToString().Equals("1") && status.ToLower().Equals("saiu da empresa"))
+                        {
+                            retval = IMPORT.IMPORT_DELETE;
+                            this.deletePerson(tbl.Rows[0]["persid"].ToString());
+                        }
+                        else
+                        {
+                            events.PERSID = tbl.Rows[0]["persid"].ToString();
+                            retval = IMPORT.IMPORT_SAMERE;
+                            this.LogTask.Information("Pessoa existente.");
+                        }
+                    }
+                    else if (tbl.Rows.Count > 0 && status.ToLower().Equals("ativo"))
+                    {
+                        this.LogTask.Information("Pessoa com persno repetido. Ultimos cardid, persid e data de acesso ativos.");
+                        events = BSSQLEvents.GetLastCardidFromPersno(this.bisACEConnection, persno);
+
+                        if (events == null || String.IsNullOrEmpty(events.CARDID))
+                            this.LogTask.Information("Nao ha eventos para essa pessoa.");
+                        else
+                        {
+                            events.PERSID = BSSQLCards.GetPersID(this.bisACEConnection, events.CARDID);
+                            this.LogTask.Information(String.Format("Pessoa com persno repetido. Ultimos cardid, persid e data de acesso ativos: {0}, {1}", events.CARDID, events.PERSID, events.DATAACESSO));
+                            if (this.doubleCheckRE(events.PERSID, persno).Value)
+                            {
+                                retval = IMPORT.IMPORT_DOUBLERE;
+                                this.LogTask.Information("Double check ok.");
+                            }
+                            else
+                            {
+                                retval = IMPORT.IMPORT_DIFFRE;
+                                this.LogTask.Information("Erro no double check. Registro sera ignorado.");
+                            }
+                        }
+                    }
+                    else if (tbl.Rows.Count > 0 && status.ToLower().Equals("saiu da empresa"))
+                    {
+                        foreach (DataRow row in tbl.Rows)
+                        {
+                            if (row["status"].ToString().Equals("1"))
+                            {
+                                this.deletePerson(row["persid"].ToString());
+                                retval = IMPORT.IMPORT_DELETE;
+                            }
+                        }
+                    }
+                    else if (tbl.Rows.Count == 0 && status.ToLower().Equals("saiu da empresa"))
+                    {
+                        retval = IMPORT.IMPORT_DISABLED;
+                        this.LogTask.Information("Pessoa excluida.");
+                    }
+                    else
+                    {
+                        retval = IMPORT.IMPORT_NEW;
+                        this.LogTask.Information("Pessoa inexistente. Seguindo a importacao.");
+                    }
+                }
+
+                return retval;
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+                return retval;
+            }
+        }
+
+        /// <summary>
+        /// Carrega o objeto ACE do BIS com as suas propriedades.
+        /// </summary>
+        /// <param name="bisoject">Objeto BIS a ser carregado com as propriedades: BSPersons, BSVisitors, BSCards, etc...</param>
+        /// <param name="properties">Propriedades referentes ao objecto BIS.</param>
+        /// <returns>Retorna o objeto BIS com as suas propriedades preenchidas. Se houver erro, retorna null.</returns>
+        private object FillBISObject(object bisoject, object properties)
+        {
+            try
+            {
+                foreach (FieldInfo p in BSCommon.GetFields(bisoject))
+                {
+                    foreach (PropertyInfo pi in ((BSPersonsInfoFEMSA)properties).GetType().GetProperties())
+                    {
+                        if (p.Name.Equals(pi.Name))
+                        {
+                            var value = pi.GetValue(properties);
+                            if (value == null)
+                                continue;
+                            if (p.FieldType.Equals(typeof(ACEDateT)) && pi.GetType().Equals(p.FieldType))
+                                p.SetValue(bisoject, value ?? new ACEDateT());
+                            else if (!pi.GetType().Equals(p.FieldType) && p.FieldType.Equals(typeof(ACEDateT)))
+                            {
+                                if (value != null)
+                                {
+                                    ACEDateT dt = new ACEDateT((uint)((DateTime)value).Day, (uint)((DateTime)value).Month, (uint)((DateTime)value).Year);
+                                    if (dt.m_iYear > 1)
+                                        p.SetValue(bisoject, dt);
+                                }
+                            }
+                            else if (p.FieldType.Equals(typeof(DateTime)) && pi.PropertyType.Equals(typeof(System.String)))
+                            {
+                                if (value != null)
+                                {
+                                    value = DateTime.Parse(value.ToString());
+                                    p.SetValue(bisoject, value);
+                                }
+
+                            }
+                            else if (p.FieldType.Equals(typeof(ACEMaritalStateT)))
+                            {
+                                p.SetValue(bisoject, (int)value);
+                            }
+                            else
+                                p.SetValue(bisoject, value);
+                            break;
+                        }
+                    }
+                }
+
+                return bisoject;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Retorna o clientid da divisão no BIS relativo
+        /// ao código de área do SAP.
+        /// </summary>
+        /// <param name="codigo">Código da área.</param>
+        /// <returns></returns>
+        private string getClientidFromArea(string codigo)
+        {
+            string retval = null;
+            try
+            {
+                this.LogTask.Information(String.Format("Verificando o clientid da area: {0}", codigo.TrimStart(new Char[] { '0' })));
+                using (DataTable table = this.bisConnection.loadDataTable(String.Format("select clientid from Horizon..tblAreas where codigo = '{0}'", codigo.TrimStart(new Char[] { '0' }))))
+                {
+                    if (table.Rows.Count > 0)
+                    {
+                        retval = table.Rows[0]["clientid"].ToString();
+                        this.LogTask.Information(String.Format("Area encontrada: {0}", retval));
+                    }
+                    else
+                        this.LogTask.Information("Area nao encontrada.");
+                }
+
+                return retval;
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Carrega a pessoa para os campos adicionais.
+        /// </summary>
+        /// <param name="persons">Classe da pessoa.</param>
+        /// <param name="persid">ID da pessoa.</param>
+        /// <returns></returns>
+        private BSPersons loadPerson(BSPersons persons, string persid)
+        {
+            try
+            {
+                if (persons == null || !persons.GetPersonId().Equals(persid))
+                {
+                    persons = new BSPersons(this.BISManager, this.bisConnection);
+                    this.LogTask.Information("Carregando a pessoa.");
+                    if (persons.Load(persid))
+                        this.LogTask.Information("Pessoa carregada com sucesso.");
+                    else
+                        throw new Exception("Erro ao carregar a pessoa.");
+                }
+
+                return persons;
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Aponta o valor do customfield no BIS.
+        /// </summary>
+        /// <param name="persons">Classe da pessoa.</param>
+        /// <param name="customfield">Nome do campo customizável.</param>
+        /// <param name="type">Tipo do campo.</param>
+        /// <param name="value">Valor do campo.</param>
+        private bool setCustomFieldBIS(BSPersons persons, string persid, string customfield, string type, string value, out BSPersons personsout)
+        {
+            bool retval = false;
+            try
+            {
+                this.LogTask.Information(String.Format("Alterando o campo {0} para {1}", customfield, value));
+                if (String.IsNullOrEmpty(persons.GetPersonId()))
+                {
+                    if (String.IsNullOrEmpty(((persons = this.loadPerson(persons, persid)).GetPersonId())))
+                        throw new Exception(persons.GetErrorMessage());
+                }
+                if (retval = persons.SetCustomField(customfield, type, value))
+                    this.LogTask.Information("Campo alterado com sucesso.");
+                else
+                    this.LogTask.Information(String.Format("Erro ao setar {0} no BIS.", customfield));
+
+                personsout = persons;
+
+                return retval;
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+                throw new Exception("Erro ao carregar a pessoa.");
+            }
+        }
+
+        /// <summary>
+        /// Aponta o valor do customfield no SQL.
+        /// </summary>
+        /// <param name="persid">ID da pessoa.</param>
+        /// <param name="customfield">Nome do campo customizável.</param>
+        /// <param name="value">Valor do campo.</param>
+        private void setCustomFieldSQL(string persid, string customfield, string value)
+        {
+            try
+            {
+                this.LogTask.Information(String.Format("Alterando o campo {0} para {1}", customfield, value));
+                if (!BSSQLPersons.SetAdditionalField(this.bisConnection, persid, customfield, value))
+                    this.LogTask.Information(String.Format("Erro ao gravar {0} no BIS.", customfield));
+                else
+                    this.LogTask.Information("Campo alterado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+        }
+
+
+        /// <summary>
+        /// Atualiza os campos customizáveis.
+        /// </summary>
+        /// <param name="persons"></param>
+        /// <param name="personsinfo"></param>
+        private void updateCustomField(BSPersons persons, BSPersonsInfoFEMSA personsinfo)
+        {
+            bool bBIS = false;
+            string id = null;
+            try
+            {
+                this.LogTask.Information("Adicionando os campos adicionais em uma pessoa existente.");
+
+                if (!String.IsNullOrWhiteSpace(id = BSSQLPersons.GetIDAdditionalField(this.bisConnection, "RG")))
+                {
+                    if (String.IsNullOrEmpty(BSSQLPersons.GetAdditionalFieldValue(this.bisConnection, personsinfo.PERSID, id)))
+                    {
+                        if ((persons = this.loadPerson(persons, personsinfo.PERSID)) != null)
+                            bBIS = this.setCustomFieldBIS(persons, personsinfo.PERSID, "RG", "STRING", personsinfo.RG, out persons) || !bBIS;
+                    }
+                    else
+                        this.setCustomFieldSQL(personsinfo.PERSID, "RG", personsinfo.RG);
+                }
+
+                if (!String.IsNullOrWhiteSpace(id = BSSQLPersons.GetIDAdditionalField(this.bisConnection, "CPF")))
+                {
+                    if (String.IsNullOrEmpty(BSSQLPersons.GetAdditionalFieldValue(this.bisConnection, personsinfo.PERSID, id)))
+                        bBIS = this.setCustomFieldBIS(persons, personsinfo.PERSID, "CPF", "STRING", personsinfo.CPF, out persons) || !bBIS;
+                    else
+                        this.setCustomFieldSQL(personsinfo.PERSID, "CPF", personsinfo.CPF);
+                }
+
+                if (!String.IsNullOrWhiteSpace(id = BSSQLPersons.GetIDAdditionalField(this.bisConnection, "PISPASEP")))
+                {
+                    if (String.IsNullOrEmpty(BSSQLPersons.GetAdditionalFieldValue(this.bisConnection, personsinfo.PERSID, id)))
+                        bBIS = this.setCustomFieldBIS(persons, personsinfo.PERSID, "PISPASEP", "STRING", personsinfo.PISPASEP, out persons) || !bBIS;
+                    else
+                        this.setCustomFieldSQL(personsinfo.PERSID, "PISPASEP", personsinfo.PISPASEP);
+                }
+
+                if (!String.IsNullOrWhiteSpace(id = BSSQLPersons.GetIDAdditionalField(this.bisConnection, "INTERNOEXTERNO")))
+                {
+                    if (String.IsNullOrEmpty(BSSQLPersons.GetAdditionalFieldValue(this.bisConnection, personsinfo.PERSID, id)))
+                        bBIS = this.setCustomFieldBIS(persons, personsinfo.PERSID, "INTERNOEXTERNO", "STRING", personsinfo.INTERNOEXTERNO, out persons) || !bBIS;
+                    else
+                        this.setCustomFieldSQL(personsinfo.PERSID, "INTERNOEXTERNO", personsinfo.INTERNOEXTERNO);
+                }
+
+                if (!String.IsNullOrWhiteSpace(id = BSSQLPersons.GetIDAdditionalField(this.bisConnection, "VA")))
+                {
+                    if (String.IsNullOrEmpty(BSSQLPersons.GetAdditionalFieldValue(this.bisConnection, personsinfo.PERSID, id)))
+                        bBIS = this.setCustomFieldBIS(persons, personsinfo.PERSID, "VA", "STRING", personsinfo.VA, out persons) || !bBIS;
+                    else
+                        this.setCustomFieldSQL(personsinfo.PERSID, "VA", personsinfo.VA);
+                }
+
+                if (!String.IsNullOrWhiteSpace(id = BSSQLPersons.GetIDAdditionalField(this.bisConnection, "VT")))
+                {
+                    if (String.IsNullOrEmpty(BSSQLPersons.GetAdditionalFieldValue(this.bisConnection, personsinfo.PERSID, id)))
+                        bBIS = this.setCustomFieldBIS(persons, personsinfo.PERSID, "VT", "STRING", personsinfo.VT, out persons) || !bBIS;
+                    else
+                        this.setCustomFieldSQL(personsinfo.PERSID, "VT", personsinfo.VT);
+                }
+
+                if (!String.IsNullOrWhiteSpace(id = BSSQLPersons.GetIDAdditionalField(this.bisConnection, "DEFICIENCIA")))
+                {
+                    if (String.IsNullOrEmpty(BSSQLPersons.GetAdditionalFieldValue(this.bisConnection, personsinfo.PERSID, id)) && !String.IsNullOrEmpty(personsinfo.DEFICIENCIA))
+                    {
+                        if ((persons = this.loadPerson(persons, personsinfo.PERSID)) != null)
+                            bBIS = this.setCustomFieldBIS(persons, personsinfo.PERSID, "DEFICIENCIA", "STRING", personsinfo.DEFICIENCIA, out persons) || !bBIS;
+                    }
+                    else if (!String.IsNullOrEmpty(personsinfo.DEFICIENCIA))
+                        this.setCustomFieldSQL(personsinfo.PERSID, "DEFICIENCIA", personsinfo.DEFICIENCIA);
+                }
+
+                if (!String.IsNullOrWhiteSpace(id = BSSQLPersons.GetIDAdditionalField(this.bisConnection, "DENGRPEMPREGADO")))
+                {
+                    if (String.IsNullOrEmpty(BSSQLPersons.GetAdditionalFieldValue(this.bisConnection, personsinfo.PERSID, id)))
+                        bBIS = this.setCustomFieldBIS(persons, personsinfo.PERSID, "DENGRPEMPREGADO", "STRING", personsinfo.DEPARTMATTEND, out persons) || !bBIS;
+                    else
+                        this.setCustomFieldSQL(personsinfo.PERSID, "DENGRPEMPREGADO", personsinfo.DEPARTMATTEND);
+                }
+
+                if (!String.IsNullOrWhiteSpace(id = BSSQLPersons.GetIDAdditionalField(this.bisConnection, "DATAADMISSAO")))
+                {
+                    if (String.IsNullOrEmpty(BSSQLPersons.GetAdditionalFieldValue(this.bisConnection, personsinfo.PERSID, id)))
+                        bBIS = this.setCustomFieldBIS(persons, personsinfo.PERSID, "DATAADMISSAO", "STRING", personsinfo.DATAADMISSAO, out persons) || !bBIS;
+                    else
+                        this.setCustomFieldSQL(personsinfo.PERSID, "DATAADMISSAO", personsinfo.DATAADMISSAO);
+                }
+
+                if (!String.IsNullOrWhiteSpace(id = BSSQLPersons.GetIDAdditionalField(this.bisConnection, "NOMERECEBEDOR")))
+                {
+                    if (String.IsNullOrEmpty(BSSQLPersons.GetAdditionalFieldValue(this.bisConnection, personsinfo.PERSID, id)))
+                        bBIS = this.setCustomFieldBIS(persons, personsinfo.PERSID, "NOMERECEBEDOR", "STRING", personsinfo.NOMERECEBEDOR, out persons) || !bBIS;
+                    else
+                        this.setCustomFieldSQL(personsinfo.PERSID, "NOMERECEBEDOR", personsinfo.NOMERECEBEDOR);
+                }
+
+                if (bBIS)
+                {
+                    if (persons.Update() == API_RETURN_CODES_CS.API_SUCCESS_CS)
+                        this.LogTask.Information("Campos adicionais gravados com sucesso.");
+                    else
+                        this.LogTask.Information(String.Format("Erro ao gravar campos adicionais. {0}", persons.GetErrorMessage()));
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+        }
+
+
+        /// <summary>
+        /// Salva o registro no BIS.
+        /// </summary>
+        /// <param name="personsinfo">Classe com os dados da pessoa.</param>
+        /// <returns></returns>
+        private RE_STATUS save(BSPersonsInfoFEMSA personsinfo)
+        {
+            RE_STATUS retval = RE_STATUS.ERROR;
+            try
+            {
+                BSPersons persons = new BSPersons(this.BISManager, this.bisACEConnection);
+                string firstname = null;
+                string lastname = null;
+
+                BSCommon.ParseName(personsinfo.NOME, out firstname, out lastname);
+                personsinfo.FIRSTNAME = firstname;
+                personsinfo.LASTNAME = lastname;
+
+                this.LogTask.Information("Carregando o objeto BSPersons.");
+                persons = (BSPersons)this.FillBISObject(persons, personsinfo);
+                if (!String.IsNullOrEmpty(personsinfo.PERSID))
+                {
+                    this.LogTask.Information("Atualizando a pessoa.");
+                    this.LogTask.Information("Carregando a pessoa.");
+                    if (persons.Load(personsinfo.PERSID))
+                        this.LogTask.Information("Pessoa carregada com sucesso.");
+                    else
+                        this.LogTask.Information("Erro ao carregar a pessoa.");
+                }
+                else
+                    this.LogTask.Information("Nova pessoa.");
+
+                string clientid = this.getClientidFromArea(personsinfo.CODIGOAREA);
+                if (!String.IsNullOrEmpty(clientid))
+                {
+                    this.LogTask.Information(String.Format("Alterando a divisao para o ID: {0}", clientid));
+                    if (this.BISManager.SetClientID(clientid))
+                        this.LogTask.Information("ClientID alterado com sucesso.");
+                    else
+                        this.LogTask.Information(String.Format("Erro ao alterar o ClientID. {0}", this.BISManager.GetErrorMessage()));
+                }
+
+                if ((String.IsNullOrEmpty(personsinfo.PERSID) || (!String.IsNullOrEmpty(persons.GetPersonId())) ? persons.Add() == API_RETURN_CODES_CS.API_SUCCESS_CS : false))
+                {
+                    this.LogTask.Information(String.Format("Registro gravado com sucesso. PERSID: {0}", persons.GetPersonId()));
+                    personsinfo.PERSID = persons.GetPersonId();
+                }
+                else
+                    throw new Exception(String.Format("Erro ao gravar o registro. {0}", persons.GetErrorMessage()));
+
+                if (!String.IsNullOrEmpty(personsinfo.CARDNO))
+                {
+                    this.LogTask.Information(String.Format("Atribuindo o cartao {0}", personsinfo.CARDNO));
+                    this.LogTask.Information("Verificando a existencia do cartao.");
+                    string cardid = BSSQLCards.GetID(this.bisACEConnection, personsinfo.CARDNO, "1568", BS_STATUS.ACTIVE);
+                    if (String.IsNullOrEmpty(cardid))
+                    {
+                        this.LogTask.Information("Criando o novo cartao.");
+                        BSCards cards = new BSCards(this.BISManager);
+                        cards.CODEDATA = "1568";
+                        cards.CARDNO = personsinfo.CARDNO;
+                        if (cards.Add() == API_RETURN_CODES_CS.API_SUCCESS_CS)
+                        {
+                            this.LogTask.Information("Cartao criado com sucesso.");
+                            this.LogTask.Information("Verificando o ID do cartao.");
+                            cardid = BSSQLCards.GetID(this.bisACEConnection, personsinfo.CARDNO, "1568", BS_STATUS.ACTIVE);
+                            this.LogTask.Information("ID encontrado: {0}. Atribuindo o cartao.", cardid);
+                            if (persons.AttachCard(cardid) == BS_ADD.SUCCESS)
+                                this.LogTask.Information("Cartao atribuido com sucesso.");
+                            else
+                                throw new Exception("Erro ao atribuir o cartao.");
+                        }
+                        else
+                            throw new Exception(String.Format("Erro ao criar o cartao. {0}", cards.GetErrorMessage()));
+                        retval = RE_STATUS.SUCCESS;
+                    }
+                    else
+                    {
+                        retval = RE_STATUS.ERROR;
+                        string persid = BSSQLCards.GetPersID(this.bisACEConnection, cardid);
+                        string persno = BSSQLPersons.GetPersno(this.bisACEConnection, persid);
+                        this.LogTask.Information(String.Format("Cartao atribuido a outro colaborador. PERSID: {0}, PERSNO: {1}", persid, persno));
+                    }
+                }
+
+                this.updateCustomField(persons, personsinfo);
+
+                return retval;
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+                return retval;
+            }
+        }
+
+        private void button21_Click(object sender, EventArgs e)
+        {
+            StreamReader reader = null;
+            List<FemsaInfo> femsaInfo = new List<FemsaInfo>();
+            int total = 0;
+            FileInfo fileInfo = null;
+            FemsaNetworkCredential credential= null;
+            try
+            {
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\Proprios\\ImportPropriosManual.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                if (openFileDialog1.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                this.LogTask.Information(String.Format("Rotina iniciada as {0}", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")));
+
+                reader = new StreamReader(openFileDialog1.FileName);
+                string line = null;
+                BSEventsInfo events = null;
+                BSPersonsInfoFEMSA personsFemsa = null;
+                RE_STATUS reStatus = RE_STATUS.ERROR;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    string[] arr = line.Split('\t');
+
+                    string persno = arr[0].TrimStart(new Char[] { '0' });
+                    string nome = arr[1];
+                    string rg = arr[2]; //rg
+                    string cpf = arr[3]; //cpf
+                    string pispasep = arr[4]; //pispasep
+                    string sexo = arr[5];
+                    string deficiencia = arr[7];//deficiencia
+                    string cnpj = arr[8];//cnpj
+                    string codigoarea = arr[9];
+                    string descricaoarea = arr[10];
+                    string subgrupoempregado = arr[13];//departmattend
+                    string unidade = arr[15];//department
+                    string centrodecusto = arr[17];//costofcentre
+                    string codigocentrodecusto = arr[18];//activity
+                    string status = arr[19];//ativo ou 
+                    string grupoempregado = arr[20];//centraloffice
+                    string dataadmissao = arr[21];//dataadmissao
+                    string funcao = arr[22];//job
+                    string internoexterno = arr[23];//internoexterno
+                    string cardno = arr[24].TrimStart(new Char[] { '0' });
+                    string va = arr[25].ToLower().Equals("s") ? "1" : "0";//va
+                    string vt = arr[26].ToLower().Equals("s") ? "1" : "0";//vt
+                    string nomerecebedor = arr[28];//nomerecebedor
+
+                    personsFemsa = new BSPersonsInfoFEMSA()
+                    {
+                        PERSNO = persno,
+                        NOME = nome,
+                        RG = rg,
+                        CPF = cpf,
+                        PISPASEP = pispasep,
+                        SEX = sexo.ToLower().Equals("M") ? 0 : 1,
+                        DEFICIENCIA = deficiencia,
+                        CNPJ = cnpj.Replace(".", "").Replace("/", "").Replace("-", ""),
+                        DEPARTMATTEND = subgrupoempregado,
+                        DEPARTMENT = unidade,
+                        ACTIVITY = codigocentrodecusto,
+                        COSTCENTRE = centrodecusto,
+                        CENTRALOFFICE = grupoempregado,
+                        INTERNOEXTERNO = internoexterno,
+                        STATUSPROPRIO = status,
+                        VA = va,
+                        VT = vt,
+                        CARDNO = cardno,
+                        NOMERECEBEDOR = nomerecebedor,
+                        JOB = funcao,
+                        DATAADMISSAO = dataadmissao,
+                        CODIGOAREA = codigoarea,
+                        DESCRICAOAREA = descricaoarea
+                    };
+
+                    this.LogTask.Information(String.Format("Importando RE: {0}, Nome: {1}", personsFemsa.PERSNO, personsFemsa.NOME));
+
+                    IMPORT resultImport = this.existRE(personsFemsa.PERSNO, personsFemsa.NOME, personsFemsa.STATUSPROPRIO, out events);
+
+                    this.LogTask.Information(String.Format("Resultado: {0}", resultImport.ToString()));
+
+                    if (resultImport == IMPORT.IMPORT_SAMERE)
+                    {
+                        personsFemsa.PERSID = events.PERSID;
+                        //this.updateCustomField(new BSPersons(this.bisManager, this.bisConnection), personsFemsa);
+                    }
+                    else if (resultImport == IMPORT.IMPORT_NEW)
+                    {
+                        personsFemsa.PERSID = events.PERSID;
+                        // Fountain / SPAL
+                        if (!String.IsNullOrEmpty(personsFemsa.CNPJ) && personsFemsa.CNPJ.Length > 8)
+                            personsFemsa.COMPANYID = (personsFemsa.CNPJ.Substring(0, 8) == "61186888" ? "0013184849D0FE94" : "00134B2266C87B31");
+                        reStatus = this.save(personsFemsa);
+                        femsaInfo.Add(new FemsaInfo() { Persno = personsFemsa.PERSNO, Nome = personsFemsa.NOME, Cardno = personsFemsa.CARDNO, Status = reStatus });
+                    }
+                    else if (resultImport == IMPORT.IMPORT_DOUBLERE)
+                    {
+                        personsFemsa.PERSID = events.PERSID;
+                        this.updateCardidDouble(personsFemsa.PERSID, events.CARDID);
+                        //this.updateCustomField(new BSPersons(this.bisManager, this.bisConnection), personsFemsa);
+                    }
+                    else if (resultImport == IMPORT.IMPORT_DELETE)
+                    {
+                        reStatus = RE_STATUS.DELETE;
+                        femsaInfo.Add(new FemsaInfo() { Persno = personsFemsa.PERSNO, Nome = personsFemsa.NOME, Cardno = personsFemsa.CARDNO, Status = reStatus });
+                    }
+
+                    ++total;
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
                 this.LogTask.Information("Rotina finalizada.");
             }
         }

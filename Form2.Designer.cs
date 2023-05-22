@@ -61,6 +61,8 @@ namespace FemsaTools
             this.Nome = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.CardNO = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.Local = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Displaytext = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.Clientid = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.Mensagem = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.grpBar = new System.Windows.Forms.GroupBox();
@@ -89,8 +91,7 @@ namespace FemsaTools
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.Displaytext = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.Clientid = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.button21 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -200,6 +201,7 @@ namespace FemsaTools
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.button21);
             this.tabPage2.Controls.Add(this.button20);
             this.tabPage2.Controls.Add(this.button16);
             this.tabPage2.Controls.Add(this.button15);
@@ -409,6 +411,16 @@ namespace FemsaTools
             this.Local.DisplayIndex = 5;
             this.Local.Text = "Local";
             this.Local.Width = 150;
+            // 
+            // Displaytext
+            // 
+            this.Displaytext.DisplayIndex = 8;
+            this.Displaytext.Text = "Displaytext";
+            // 
+            // Clientid
+            // 
+            this.Clientid.DisplayIndex = 9;
+            this.Clientid.Text = "Clientid";
             // 
             // Mensagem
             // 
@@ -672,15 +684,15 @@ namespace FemsaTools
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // Displaytext
+            // button21
             // 
-            this.Displaytext.DisplayIndex = 8;
-            this.Displaytext.Text = "Displaytext";
-            // 
-            // Clientid
-            // 
-            this.Clientid.DisplayIndex = 9;
-            this.Clientid.Text = "Clientid";
+            this.button21.Location = new System.Drawing.Point(3, 252);
+            this.button21.Name = "button21";
+            this.button21.Size = new System.Drawing.Size(124, 38);
+            this.button21.TabIndex = 18;
+            this.button21.Text = "Importar Próprios";
+            this.button21.UseVisualStyleBackColor = true;
+            this.button21.Click += new System.EventHandler(this.button21_Click);
             // 
             // Form2
             // 
@@ -692,6 +704,7 @@ namespace FemsaTools
             this.Name = "Form2";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Administração BIS";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form2_FormClosing);
             this.Load += new System.EventHandler(this.Form2_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form2_KeyDown);
             this.tabControl1.ResumeLayout(false);
@@ -776,5 +789,6 @@ namespace FemsaTools
         private System.Windows.Forms.Button button20;
         private System.Windows.Forms.ColumnHeader Displaytext;
         private System.Windows.Forms.ColumnHeader Clientid;
+        private System.Windows.Forms.Button button21;
     }
 }
