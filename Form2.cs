@@ -603,6 +603,115 @@ namespace FemsaTools
                     btnExport.Visible = true;
             }
         }
+
+        private bool saveInfoFile(string filename)
+        {
+            StreamReader reader = null;
+            try
+            {
+                this.Cursor = Cursors.WaitCursor;
+                float length = 0;
+                reader = new StreamReader(filename);
+                while (reader.ReadLine() != null)
+                    length++;
+                reader.Close();
+                this.abort = false;
+                reader = new StreamReader(filename);
+                string line = null;
+                int pos = -1;
+                grpBar.Visible = true;
+                grpBar.Text = String.Format("Arquivo: {0}", filename);
+                pgBar.Refresh();
+                float lineCount = 0;
+                this.LogTask.Information(String.Format("Arquivo: {0}", filename));
+                string[] arr = null;
+                string data = null;
+                string persid = null;
+                string persno = null;
+                string cpf = null;
+                string nome = null;
+                string cardno = null;
+                string local = null;
+                string leitor = null;
+                string ip = null;
+                string tipo = null;
+                string tipoacesso = null;
+                string deviceid = null;
+                string sql = null;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    this.LogTask.Information(String.Format("{0} de {1}: {2}", (++lineCount).ToString(), length.ToString(), line));
+
+                    pgBar.Value = (int)Math.Truncate((lineCount / length) * 100);
+                    pgBar.Refresh();
+                    if (lineCount % 1000 == 0)
+                        lstData.Refresh();
+
+                    System.Windows.Forms.Application.DoEvents();
+
+                    if (this.abort)
+                        break;
+
+                    if (lineCount % 1000 == 0)
+                        this.Refresh();
+
+                    arr = line.Trim().Split(';');
+                    persid = null;
+                    persno = null;
+                    cpf = null;
+                    nome = null;
+                    cardno = null;
+                    local = null;
+                    leitor = null;
+                    ip = null;
+                    tipo = null;
+                    deviceid = null;
+                    try
+                    {
+                        data = arr[0];
+                        persid = arr[1];
+                        persno = arr[2];
+                        cpf = arr[3];
+                        nome = arr[4];
+                        cardno = arr[5];
+                        local = arr[6];
+                        leitor = arr[7];
+                        tipoacesso = arr[8];
+                        ip = arr[9];
+                        tipo = arr[10];
+                        deviceid = arr[11];
+
+                        sql = String.Format("set dateformat 'dmy' insert into [Bosch.EventDb].dbo.tblEventos values (DATEADD(mi, DATEDIFF(mi, GETDATE(), GETUTCDATE()), '{0}'),'{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}', '{10}', '{11}')", data, persno, nome, leitor, local,
+                            tipo, "16777985", cpf, persid, tipoacesso, ip, deviceid);
+                        this.LogTask.Information(sql);
+                        this.bisACEConnection.executeProcedure(sql);
+                    }
+                    catch (Exception ex)
+                    {
+                        this.Cursor = Cursors.Default;
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                MessageBox.Show(ex.Message);
+                return !this.abort;
+            }
+            finally
+            {
+                this.Cursor = Cursors.Default;
+                if (reader != null)
+                    reader.Close();
+                pgBar.Visible = false;
+                if (lstData.Items.Count > 0)
+                    btnExport.Visible = true;
+            }
+        }
         private void button4_Click(object sender, EventArgs e)
         {
             try
@@ -650,33 +759,84 @@ namespace FemsaTools
         private void btnExport_Click(object sender, EventArgs e)
         {
             StreamWriter writer = null;
+            List<string> readers = new List<string>();
             try
             {
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Main\\TSInfoFile.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
                 if (this.saveFileDialog1.ShowDialog() == DialogResult.Cancel)
                     return;
                 this.Cursor = Cursors.WaitCursor;
+                this.LogTask.Information(String.Format("Salvando no arquivo: {0}", this.saveFileDialog1.FileName));
                 writer = new StreamWriter(this.saveFileDialog1.FileName);
-                writer.WriteLine("Data;Persid;Tipo;Documento;Nome;Cartao;Local;DisplayText;Clientid;Mensagem");
-                foreach (ListViewItem item in lstData.Items)
-                    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[2].Text, item.SubItems[3].Text, 
-                        item.SubItems[4].Text, item.SubItems[5].Text, item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[8].Text, item.SubItems[9].Text));
+                //writer.WriteLine("Data;Persid;Tipo;Documento;Nome;Cartao;Local;DisplayText;Clientid;Mensagem");
+                //foreach (ListViewItem item in lstData.Items)
+                //    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[2].Text, item.SubItems[3].Text, 
+                //        item.SubItems[4].Text, item.SubItems[5].Text, item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[8].Text, item.SubItems[9].Text));
 
-                writer.Close();
+                //writer.Close();
 
                 string cmpipamc = "";
                 string descricao = "";
                 string displaytextcustomer = "";
                 string idnumber = "";
+                string deviceid = "";
                 string sql = null;
+                writer.WriteLine("Data;Persid;Persno;CPF;Nome;Cardno;Local;Leitor;ES;IP;Tipo;DeviceID");
+                //readers.Add("LE-CAT-01-CVC-TER");
+                //readers.Add("LE-CAT-02-CVC-TER");
+                //readers.Add("LE-CAT-03-CVC-TER");
+                //readers.Add("LE-CAT-PNE-TER");
+                //readers.Add("LE-CAT-REF-1ºSS");
+                //readers.Add("LE-CAT-SERV-1ºSS");
+                //readers.Add("LE-CAT-PNE-1ºSS");
+                //readers.Add("LE-CAT-CVC-2ºSS");
+                //readers.Add("LE-CAT-PNE-2ºSS");
+                //readers.Add("LE-CAT-CVC-3ºSS");
+                //readers.Add("LE-CAT-PNE-3ºSS");
+                //readers.Add("LE-CAT-CVC-4ºSS");
+                //readers.Add("LE-CAT-PNE-4ºSS");
+                //readers.Add("LS-CAT-01-CVC-TER");
+                //readers.Add("LS-CAT-02-CVC-TER");
+                //readers.Add("LS-CAT-03-CVC-TER");
+                //readers.Add("LS-CAT-PNE-TER");
+                //readers.Add("LS-CAT-REF-1ºSS");
+                //readers.Add("LS-CAT-SERV-1ºSS");
+                //readers.Add("LS-CAT-PNE-1ºSS");
+                //readers.Add("LS-CAT-CVC-2ºSS");
+                //readers.Add("LS-CAT-PNE-2ºSS");
+                //readers.Add("LS-CAT-CVC-3ºSS");
+                //readers.Add("LS-CAT-PNE-3ºSS");
+                //readers.Add("LS-CAT-CVC-4ºSS");
+                //readers.Add("LS-CAT-PNE-4ºSS");
+                //readers.Add("LE-CAT-REF-1ºSS");
+                //readers.Add("LS-CAT-REF-1ºSS");
+                //readers.Add("LS-CAT-CVC-4°SS");
                 foreach (ListViewItem item in lstData.Items)
                 {
-                    using (DataTable table = this.bisACEConnection.loadDataTable(String.Format("select cmpIpAMC, dev.description from [bosch.eventdb].dbo.tblAMC amc inner join acedb.bsuser.devices dev on dev.parentdevice = amc.cmpIDAmc where dev.displaytext = '{0}'", item.SubItems[6].Text)))
+                    this.LogTask.Information(String.Format("Pesquisando o acesso na leitora: {0}.", item.SubItems[7].Text));
+                    //string rd = readers.Find(x => x.Equals(item.SubItems[7].Text));
+                    //if (String.IsNullOrEmpty(rd))
+                    //{
+                    //    this.LogTask.Information("Leitor fora do range de importacao.");
+                    //    continue;
+                    //}
+
+                    using (DataTable table = this.bisACEConnection.loadDataTable(String.Format("select cmpIpAMC, dev.id, dev.description from [bosch.eventdb].dbo.tblAMC amc inner join acedb.bsuser.devices dev on dev.parentdevice = amc.cmpIDAmc where dev.displaytext = '{0}'", item.SubItems[7].Text)))
                     {
                         if (table.Rows.Count > 0)
                         {
                             cmpipamc = table.Rows[0]["cmpipamc"].ToString();
                             descricao = table.Rows[0]["description"].ToString();
-
+                            deviceid = table.Rows[0]["id"].ToString();
+                            this.LogTask.Information(String.Format("IP: {0}, Descricao: {1}", cmpipamc, descricao));
+                        }
+                        else
+                        {
+                            this.LogTask.Information("Leitor fora do range de importacao.");
+                            continue;
                         }
                     }
 
@@ -690,11 +850,18 @@ namespace FemsaTools
                         }
                     }
 
-                    sql = String.Format("insert into [Bosch.EventDb].dbo.tblEventos values ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}', '{10}')", item.SubItems[0].Text, item.SubItems[3].Text, item.SubItems[4].Text, item.SubItems[6].Text, descricao,
-                        displaytextcustomer, "16777985", idnumber, item.SubItems[1].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc);
-                    this.bisACEConnection.executeProcedure(sql);
+                    //sql = String.Format("insert into [Bosch.EventDb].dbo.tblEventos values ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}', '{10}')", item.SubItems[0].Text, item.SubItems[3].Text, item.SubItems[4].Text, item.SubItems[6].Text, descricao,
+                    //displaytextcustomer, "16777985", idnumber, item.SubItems[1].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc);
+                    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[3].Text, idnumber, item.SubItems[4].Text, item.SubItems[5].Text,
+                        item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc, displaytextcustomer, deviceid));
+                    this.LogTask.Information(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[3].Text, idnumber, item.SubItems[4].Text, item.SubItems[5].Text,
+                        item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc, displaytextcustomer, deviceid));
+                    //descricao,
+                    //displaytextcustomer, "16777985", idnumber, item.SubItems[1].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc));
+                    //this.bisACEConnection.executeProcedure(sql);
                 }
 
+                writer.Close();
                 this.Cursor = Cursors.Default;
 
                 MessageBox.Show("ok!");
@@ -706,6 +873,7 @@ namespace FemsaTools
             }
             finally
             {
+                this.LogTask.Information("Rotina finalizada.");
                 pgBar.Visible = false;
                 if (lstData.Items.Count > 0)
                     btnExport.Visible = true;
@@ -2548,6 +2716,39 @@ namespace FemsaTools
                     this.LogTask.Information("Erro ao desconectar com o BIS.");
 
                 this.LogTask.Information("Rotina finalizada.");
+            }
+        }
+
+        private void button22_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                lstData.View = View.Details;
+
+                this.ReadParameters();
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                if (folderBrowserDialog1.ShowDialog() != DialogResult.OK)
+                    return;
+
+                lstData.Items.Clear();
+                string path = folderBrowserDialog1.SelectedPath;
+                foreach (string filename in Directory.GetFiles(path))
+                {
+                    if (!this.saveInfoFile(filename))
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                grpBar.Visible = false;
+                if (lstData.Items.Count > 0)
+                    btnExport.Visible = true;
             }
         }
     }

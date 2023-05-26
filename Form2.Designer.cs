@@ -39,6 +39,7 @@ namespace FemsaTools
             this.button1 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.button21 = new System.Windows.Forms.Button();
             this.button20 = new System.Windows.Forms.Button();
             this.button16 = new System.Windows.Forms.Button();
             this.button15 = new System.Windows.Forms.Button();
@@ -91,7 +92,7 @@ namespace FemsaTools
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.button21 = new System.Windows.Forms.Button();
+            this.button22 = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -217,6 +218,16 @@ namespace FemsaTools
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Administração";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // button21
+            // 
+            this.button21.Location = new System.Drawing.Point(3, 252);
+            this.button21.Name = "button21";
+            this.button21.Size = new System.Drawing.Size(124, 38);
+            this.button21.TabIndex = 18;
+            this.button21.Text = "Importar Próprios";
+            this.button21.UseVisualStyleBackColor = true;
+            this.button21.Click += new System.EventHandler(this.button21_Click);
             // 
             // button20
             // 
@@ -430,6 +441,7 @@ namespace FemsaTools
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.button22);
             this.groupBox2.Controls.Add(this.grpBar);
             this.groupBox2.Controls.Add(this.chkType);
             this.groupBox2.Controls.Add(this.btnExport);
@@ -684,15 +696,15 @@ namespace FemsaTools
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // button21
+            // button22
             // 
-            this.button21.Location = new System.Drawing.Point(3, 252);
-            this.button21.Name = "button21";
-            this.button21.Size = new System.Drawing.Size(124, 38);
-            this.button21.TabIndex = 18;
-            this.button21.Text = "Importar Próprios";
-            this.button21.UseVisualStyleBackColor = true;
-            this.button21.Click += new System.EventHandler(this.button21_Click);
+            this.button22.Location = new System.Drawing.Point(370, 42);
+            this.button22.Name = "button22";
+            this.button22.Size = new System.Drawing.Size(107, 28);
+            this.button22.TabIndex = 14;
+            this.button22.Text = "Gravar";
+            this.button22.UseVisualStyleBackColor = true;
+            this.button22.Click += new System.EventHandler(this.button22_Click);
             // 
             // Form2
             // 
@@ -790,5 +802,6 @@ namespace FemsaTools
         private System.Windows.Forms.ColumnHeader Displaytext;
         private System.Windows.Forms.ColumnHeader Clientid;
         private System.Windows.Forms.Button button21;
+        private System.Windows.Forms.Button button22;
     }
 }
