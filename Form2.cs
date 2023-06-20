@@ -194,7 +194,7 @@ namespace FemsaTools
                     throw new Exception("Nao ha arquivo de configuracao do SG3.");
 
                 this.SG3Hosts = JsonConvert.DeserializeObject<List<SG3Host>>(sql);
-                foreach(SG3Host host in this.SG3Hosts)
+                foreach (SG3Host host in this.SG3Hosts)
                 {
                     this.LogTask.Information(String.Format("SG3 --> Host: {0}, Username: {1}, Password: {2}", host.Host,
                         host.Username, host.Password));
@@ -239,7 +239,7 @@ namespace FemsaTools
             InitializeComponent();
 
             this.LogTask = new LoggerConfiguration()
-                .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Block\\BlockTaskLog.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                .WriteTo.File("c:\\Horizon\\Log\\Tools\\Block\\BlockTaskLog.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                 .CreateLogger();
 
             this.LogTaskCD = new LoggerConfiguration()
@@ -247,15 +247,15 @@ namespace FemsaTools
                 .CreateLogger();
 
             this.LogTaskSolo = new LoggerConfiguration()
-                .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Block\\BlockTaskLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                .WriteTo.File("c:\\Horizon\\Log\\Tools\\Block\\BlockTaskLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                 .CreateLogger();
 
             this.LogResult = new LoggerConfiguration()
-                .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Block\\BlockResultLog.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                .WriteTo.File("c:\\Horizon\\Log\\Tools\\Block\\BlockResultLog.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                 .CreateLogger();
 
             this.LogResultSolo = new LoggerConfiguration()
-                .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Block\\BlockResultLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                .WriteTo.File("c:\\Horizon\\Log\\Tools\\Block\\BlockResultLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                 .CreateLogger();
         }
 
@@ -289,7 +289,7 @@ namespace FemsaTools
             try
             {
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\AddAuthorizaion.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\AddAuthorizaion.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 this.ReadParameters();
@@ -367,10 +367,10 @@ namespace FemsaTools
             }
 
             this.LogTask = new LoggerConfiguration()
-                .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Block\\ImportTaskLogRE.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                .WriteTo.File("c:\\Horizon\\Log\\Tools\\Block\\ImportTaskLogRE.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                 .CreateLogger();
             this.LogResult = new LoggerConfiguration()
-                .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Block\\ImportResultLogRE.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                .WriteTo.File("c:\\Horizon\\Log\\Tools\\Block\\ImportResultLogRE.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                 .CreateLogger();
             this.ReadParameters();
 
@@ -389,7 +389,7 @@ namespace FemsaTools
                 this.Cursor = Cursors.WaitCursor;
 
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\ImportProprios.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\ImportProprios.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 this.ReadParameters();
@@ -544,13 +544,12 @@ namespace FemsaTools
                     try
                     {
                         string id = arr[0].Substring(0, pos);
-                        DateTime date = DateTime.Parse(arr[0].Substring(pos + 1, arr[0].Length - (pos + 1)) + " " + arr[1]);
+                        string date = arr[0].Substring(pos + 1, arr[0].Length - (pos + 1)) + " " + arr[1];
                         deviceid = arr[3];
                         cardid = arr[5];
 
                         // exibe apenas os eventos relativos ao acesso
-                        if ((String.IsNullOrEmpty(tipo) && !String.IsNullOrEmpty(arr[6])) || (!String.IsNullOrEmpty(arr[7])
-                            && !String.IsNullOrEmpty(arr[4]) && !String.IsNullOrEmpty(arr[6]) && line.IndexOf(tipo) > 0))
+                        if ((String.IsNullOrEmpty(tipo) && !String.IsNullOrEmpty(arr[6])) || (!String.IsNullOrEmpty(arr[4]) && !String.IsNullOrEmpty(arr[6]) && line.IndexOf(tipo) > 0))
                         {
                             person = BSSQLPersons.GetPersonFromCardID(this.bisACEConnection, cardid);
                             if (person == null)
@@ -771,95 +770,95 @@ namespace FemsaTools
                 this.Cursor = Cursors.WaitCursor;
                 this.LogTask.Information(String.Format("Salvando no arquivo: {0}", this.saveFileDialog1.FileName));
                 writer = new StreamWriter(this.saveFileDialog1.FileName);
-                //writer.WriteLine("Data;Persid;Tipo;Documento;Nome;Cartao;Local;DisplayText;Clientid;Mensagem");
-                //foreach (ListViewItem item in lstData.Items)
-                //    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[2].Text, item.SubItems[3].Text, 
-                //        item.SubItems[4].Text, item.SubItems[5].Text, item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[8].Text, item.SubItems[9].Text));
-
-                //writer.Close();
-
-                string cmpipamc = "";
-                string descricao = "";
-                string displaytextcustomer = "";
-                string idnumber = "";
-                string deviceid = "";
-                string sql = null;
-                writer.WriteLine("Data;Persid;Persno;CPF;Nome;Cardno;Local;Leitor;ES;IP;Tipo;DeviceID");
-                //readers.Add("LE-CAT-01-CVC-TER");
-                //readers.Add("LE-CAT-02-CVC-TER");
-                //readers.Add("LE-CAT-03-CVC-TER");
-                //readers.Add("LE-CAT-PNE-TER");
-                //readers.Add("LE-CAT-REF-1ºSS");
-                //readers.Add("LE-CAT-SERV-1ºSS");
-                //readers.Add("LE-CAT-PNE-1ºSS");
-                //readers.Add("LE-CAT-CVC-2ºSS");
-                //readers.Add("LE-CAT-PNE-2ºSS");
-                //readers.Add("LE-CAT-CVC-3ºSS");
-                //readers.Add("LE-CAT-PNE-3ºSS");
-                //readers.Add("LE-CAT-CVC-4ºSS");
-                //readers.Add("LE-CAT-PNE-4ºSS");
-                //readers.Add("LS-CAT-01-CVC-TER");
-                //readers.Add("LS-CAT-02-CVC-TER");
-                //readers.Add("LS-CAT-03-CVC-TER");
-                //readers.Add("LS-CAT-PNE-TER");
-                //readers.Add("LS-CAT-REF-1ºSS");
-                //readers.Add("LS-CAT-SERV-1ºSS");
-                //readers.Add("LS-CAT-PNE-1ºSS");
-                //readers.Add("LS-CAT-CVC-2ºSS");
-                //readers.Add("LS-CAT-PNE-2ºSS");
-                //readers.Add("LS-CAT-CVC-3ºSS");
-                //readers.Add("LS-CAT-PNE-3ºSS");
-                //readers.Add("LS-CAT-CVC-4ºSS");
-                //readers.Add("LS-CAT-PNE-4ºSS");
-                //readers.Add("LE-CAT-REF-1ºSS");
-                //readers.Add("LS-CAT-REF-1ºSS");
-                //readers.Add("LS-CAT-CVC-4°SS");
+                writer.WriteLine("Data;Persid;Tipo;Documento;Nome;Cartao;Local;DisplayText;Clientid;Mensagem");
                 foreach (ListViewItem item in lstData.Items)
-                {
-                    this.LogTask.Information(String.Format("Pesquisando o acesso na leitora: {0}.", item.SubItems[7].Text));
-                    //string rd = readers.Find(x => x.Equals(item.SubItems[7].Text));
-                    //if (String.IsNullOrEmpty(rd))
-                    //{
-                    //    this.LogTask.Information("Leitor fora do range de importacao.");
-                    //    continue;
-                    //}
+                    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[2].Text, item.SubItems[3].Text,
+                        item.SubItems[4].Text, item.SubItems[5].Text, item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[8].Text, item.SubItems[9].Text));
 
-                    using (DataTable table = this.bisACEConnection.loadDataTable(String.Format("select cmpIpAMC, dev.id, dev.description from [bosch.eventdb].dbo.tblAMC amc inner join acedb.bsuser.devices dev on dev.parentdevice = amc.cmpIDAmc where dev.displaytext = '{0}'", item.SubItems[7].Text)))
-                    {
-                        if (table.Rows.Count > 0)
-                        {
-                            cmpipamc = table.Rows[0]["cmpipamc"].ToString();
-                            descricao = table.Rows[0]["description"].ToString();
-                            deviceid = table.Rows[0]["id"].ToString();
-                            this.LogTask.Information(String.Format("IP: {0}, Descricao: {1}", cmpipamc, descricao));
-                        }
-                        else
-                        {
-                            this.LogTask.Information("Leitor fora do range de importacao.");
-                            continue;
-                        }
-                    }
+                writer.Close();
 
-                    using (DataTable table = this.bisACEConnection.loadDataTable(String.Format("select displaytextcustomer, idnumber from acedb.bsuser.persons per inner join bsuser.persclasses cla on cla.persclassid = per.persclassid where per.persid = '{0}'", item.SubItems[1].Text)))
-                    {
-                        if (table.Rows.Count > 0)
-                        {
-                            displaytextcustomer = table.Rows[0]["displaytextcustomer"].ToString();
-                            idnumber = table.Rows[0]["idnumber"].ToString();
+                //string cmpipamc = "";
+                //string descricao = "";
+                //string displaytextcustomer = "";
+                //string idnumber = "";
+                //string deviceid = "";
+                //string sql = null;
+                //writer.WriteLine("Data;Persid;Persno;CPF;Nome;Cardno;Local;Leitor;ES;IP;Tipo;DeviceID");
+                ////readers.Add("LE-CAT-01-CVC-TER");
+                ////readers.Add("LE-CAT-02-CVC-TER");
+                ////readers.Add("LE-CAT-03-CVC-TER");
+                ////readers.Add("LE-CAT-PNE-TER");
+                ////readers.Add("LE-CAT-REF-1ºSS");
+                ////readers.Add("LE-CAT-SERV-1ºSS");
+                ////readers.Add("LE-CAT-PNE-1ºSS");
+                ////readers.Add("LE-CAT-CVC-2ºSS");
+                ////readers.Add("LE-CAT-PNE-2ºSS");
+                ////readers.Add("LE-CAT-CVC-3ºSS");
+                ////readers.Add("LE-CAT-PNE-3ºSS");
+                ////readers.Add("LE-CAT-CVC-4ºSS");
+                ////readers.Add("LE-CAT-PNE-4ºSS");
+                ////readers.Add("LS-CAT-01-CVC-TER");
+                ////readers.Add("LS-CAT-02-CVC-TER");
+                ////readers.Add("LS-CAT-03-CVC-TER");
+                ////readers.Add("LS-CAT-PNE-TER");
+                ////readers.Add("LS-CAT-REF-1ºSS");
+                ////readers.Add("LS-CAT-SERV-1ºSS");
+                ////readers.Add("LS-CAT-PNE-1ºSS");
+                ////readers.Add("LS-CAT-CVC-2ºSS");
+                ////readers.Add("LS-CAT-PNE-2ºSS");
+                ////readers.Add("LS-CAT-CVC-3ºSS");
+                ////readers.Add("LS-CAT-PNE-3ºSS");
+                ////readers.Add("LS-CAT-CVC-4ºSS");
+                ////readers.Add("LS-CAT-PNE-4ºSS");
+                ////readers.Add("LE-CAT-REF-1ºSS");
+                ////readers.Add("LS-CAT-REF-1ºSS");
+                ////readers.Add("LS-CAT-CVC-4°SS");
+                //foreach (ListViewItem item in lstData.Items)
+                //{
+                //    this.LogTask.Information(String.Format("Pesquisando o acesso na leitora: {0}.", item.SubItems[7].Text));
+                //    //string rd = readers.Find(x => x.Equals(item.SubItems[7].Text));
+                //    //if (String.IsNullOrEmpty(rd))
+                //    //{
+                //    //    this.LogTask.Information("Leitor fora do range de importacao.");
+                //    //    continue;
+                //    //}
 
-                        }
-                    }
+                //    using (DataTable table = this.bisACEConnection.loadDataTable(String.Format("select cmpIpAMC, dev.id, dev.description from [bosch.eventdb].dbo.tblAMC amc inner join acedb.bsuser.devices dev on dev.parentdevice = amc.cmpIDAmc where dev.displaytext = '{0}'", item.SubItems[7].Text)))
+                //    {
+                //        if (table.Rows.Count > 0)
+                //        {
+                //            cmpipamc = table.Rows[0]["cmpipamc"].ToString();
+                //            descricao = table.Rows[0]["description"].ToString();
+                //            deviceid = table.Rows[0]["id"].ToString();
+                //            this.LogTask.Information(String.Format("IP: {0}, Descricao: {1}", cmpipamc, descricao));
+                //        }
+                //        else
+                //        {
+                //            this.LogTask.Information("Leitor fora do range de importacao.");
+                //            continue;
+                //        }
+                //    }
 
-                    //sql = String.Format("insert into [Bosch.EventDb].dbo.tblEventos values ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}', '{10}')", item.SubItems[0].Text, item.SubItems[3].Text, item.SubItems[4].Text, item.SubItems[6].Text, descricao,
-                    //displaytextcustomer, "16777985", idnumber, item.SubItems[1].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc);
-                    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[3].Text, idnumber, item.SubItems[4].Text, item.SubItems[5].Text,
-                        item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc, displaytextcustomer, deviceid));
-                    this.LogTask.Information(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[3].Text, idnumber, item.SubItems[4].Text, item.SubItems[5].Text,
-                        item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc, displaytextcustomer, deviceid));
-                    //descricao,
-                    //displaytextcustomer, "16777985", idnumber, item.SubItems[1].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc));
-                    //this.bisACEConnection.executeProcedure(sql);
-                }
+                //    using (DataTable table = this.bisACEConnection.loadDataTable(String.Format("select displaytextcustomer, idnumber from acedb.bsuser.persons per inner join bsuser.persclasses cla on cla.persclassid = per.persclassid where per.persid = '{0}'", item.SubItems[1].Text)))
+                //    {
+                //        if (table.Rows.Count > 0)
+                //        {
+                //            displaytextcustomer = table.Rows[0]["displaytextcustomer"].ToString();
+                //            idnumber = table.Rows[0]["idnumber"].ToString();
+
+                //        }
+                //    }
+
+                //    //sql = String.Format("insert into [Bosch.EventDb].dbo.tblEventos values ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}', '{10}')", item.SubItems[0].Text, item.SubItems[3].Text, item.SubItems[4].Text, item.SubItems[6].Text, descricao,
+                //    //displaytextcustomer, "16777985", idnumber, item.SubItems[1].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc);
+                //    writer.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[3].Text, idnumber, item.SubItems[4].Text, item.SubItems[5].Text,
+                //        item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc, displaytextcustomer, deviceid));
+                //    this.LogTask.Information(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11}", item.SubItems[0].Text, item.SubItems[1].Text, item.SubItems[3].Text, idnumber, item.SubItems[4].Text, item.SubItems[5].Text,
+                //        item.SubItems[6].Text, item.SubItems[7].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc, displaytextcustomer, deviceid));
+                //    //descricao,
+                //    //displaytextcustomer, "16777985", idnumber, item.SubItems[1].Text, item.SubItems[7].Text.Substring(0, 2).ToLower().Equals("le") ? "Entrada" : "Saida", cmpipamc));
+                //    //this.bisACEConnection.executeProcedure(sql);
+                //}
 
                 writer.Close();
                 this.Cursor = Cursors.Default;
@@ -986,11 +985,11 @@ namespace FemsaTools
             try
             {
                 this.LogSG3Task = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\ImportSG3TaskLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\ImportSG3TaskLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 this.LogSG3Result = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\ImportSG3ResultLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\ImportSG3ResultLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 persons = new BSPersons(this.BISManager, this.bisACEConnection);
@@ -1024,7 +1023,7 @@ namespace FemsaTools
             {
                 string line = null;
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\AddCompany.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\AddCompany.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 this.ReadParameters();
@@ -1089,7 +1088,7 @@ namespace FemsaTools
             try
             {
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\CheckWFMBIS.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\CheckWFMBIS.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 this.ReadParameters();
@@ -1097,7 +1096,7 @@ namespace FemsaTools
 
                 using (DataTable table = this.bisACEConnection.loadDataTable("select distinct re, nome from [10.153.68.133].sisqualwfm.dbo.BOSCH_Empregados be"))
                 {
-                    foreach(DataRow row in table.Rows)
+                    foreach (DataRow row in table.Rows)
                     {
                         using (DataTable tblBIS = this.bisACEConnection.loadDataTable(String.Format("select persid, persclass, persclassid from bsuser.persons where persno = '{0}' and persclassid != 'FF0000E500000001'", row["re"].ToString())))
                         {
@@ -1128,7 +1127,7 @@ namespace FemsaTools
                 this.Cursor = Cursors.WaitCursor;
 
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\CheckLastUsedCardSG3.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\CheckLastUsedCardSG3.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 this.ReadParameters();
@@ -1214,7 +1213,7 @@ namespace FemsaTools
             try
             {
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\DeleteSG3.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\DeleteSG3.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 if (openFileDialog1.ShowDialog() == DialogResult.Cancel) throw new Exception("Nenhum arquivo lido.");
@@ -1280,7 +1279,7 @@ namespace FemsaTools
             {
                 string line = null;
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\DelteNoAccess.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\DelteNoAccess.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 this.ReadParameters();
@@ -1297,13 +1296,13 @@ namespace FemsaTools
                 using (DataTable table = this.bisACEConnection.loadDataTable("select distinct per.persid, per.persno, nome = isnull(firstname, '') + ' ' + isnull(lastname, ''), accesstime, PERSCLASSID from bsuser.persons per " +
                     "left outer join bsuser.CURRENTACCESSSTATE cur on cur.persid = per.persid where persclass = 'E' and per.status = 1 and accesstime is null"))
                 {
-                    if (table != null && table.Rows.Count > 0) 
+                    if (table != null && table.Rows.Count > 0)
                     {
                         int i = 1;
                         BSPersons per = new BSPersons(this.BISManager, this.bisACEConnection);
                         this.LogTask.Information(String.Format("{0} Registros encontrados.", table.Rows.Count.ToString()));
                         foreach (DataRow row in table.Rows)
-                        { 
+                        {
                             this.LogTask.Information(String.Format("{0} de {1}. Persid: {2}, Persno: {3}, Nome: {4}", (i++).ToString(), table.Rows.Count.ToString(),
                                 row["persid"].ToString(), row["persno"].ToString(), row["nome"].ToString()));
                             this.LogTask.Information("Excluindo a pessoa.");
@@ -1343,7 +1342,7 @@ namespace FemsaTools
             try
             {
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\AjusteCPF.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\AjusteCPF.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 reader = new StreamReader(@"c:\temp\Bosch_2");
@@ -1457,7 +1456,7 @@ namespace FemsaTools
             try
             {
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\RemoveAuthorizaion.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\RemoveAuthorizaion.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 this.ReadParameters();
@@ -1526,7 +1525,7 @@ namespace FemsaTools
             try
             {
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\AjusteSAPBIS.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\AjusteSAPBIS.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 this.ReadParameters();
@@ -1724,7 +1723,7 @@ namespace FemsaTools
         private void Form2_KeyDown(object sender, KeyEventArgs e)
         {
             this.abort = e.KeyCode == Keys.Escape;
-                
+
         }
 
         private void button17_Click(object sender, EventArgs e)
@@ -1732,7 +1731,7 @@ namespace FemsaTools
             try
             {
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\ChangeToCommon.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\ChangeToCommon.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 this.ReadParameters();
@@ -1751,7 +1750,7 @@ namespace FemsaTools
                     this.LogTask.Information(String.Format("{0} registros encontrados.", table.Rows.Count.ToString()));
                     int rowCount = 1;
                     BSPersons per = new BSPersons(this.BISManager, this.bisACEConnection);
-                    foreach(DataRow row in table.Rows)
+                    foreach (DataRow row in table.Rows)
                     {
                         this.LogTask.Information(String.Format("{0} de {1}. Persid: {2}, Persno: {3}, Nome: {4}, Unidade: {5}",
                             (rowCount++).ToString(), table.Rows.Count.ToString(), row["persid"].ToString(), row["persno"].ToString(), row["name"].ToString(), row["Unidade"].ToString()));
@@ -1801,7 +1800,7 @@ namespace FemsaTools
             try
             {
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\DeleteCPFNulo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\DeleteCPFNulo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 this.LogTask.Information("Conectando com o BIS.");
@@ -1878,11 +1877,11 @@ namespace FemsaTools
             try
             {
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\BlockSG3TaskLog.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\BlockSG3TaskLog.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 this.LogResult = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\BlockSG3TaskLog.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\BlockSG3TaskLog.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 int total = 0;
@@ -1968,7 +1967,7 @@ namespace FemsaTools
             try
             {
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\AjusteCPF.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\AjusteCPF.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 writer = new StreamWriter(@"c:\temp\CheckCPF.csv");
@@ -2596,11 +2595,11 @@ namespace FemsaTools
             List<FemsaInfo> femsaInfo = new List<FemsaInfo>();
             int total = 0;
             FileInfo fileInfo = null;
-            FemsaNetworkCredential credential= null;
+            FemsaNetworkCredential credential = null;
             try
             {
                 this.LogTask = new LoggerConfiguration()
-                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\Proprios\\ImportPropriosManual.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\Proprios\\ImportPropriosManual.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
                     .CreateLogger();
 
                 if (openFileDialog1.ShowDialog(this) != DialogResult.OK)
@@ -2749,6 +2748,244 @@ namespace FemsaTools
                 grpBar.Visible = false;
                 if (lstData.Items.Count > 0)
                     btnExport.Visible = true;
+            }
+        }
+
+        private void button23_Click(object sender, EventArgs e)
+        {
+            BSPersons persons = null;
+            try
+            {
+                this.LogSG3Task = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\ImportSG3TaskLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.LogSG3Result = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\ImportSG3ResultLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    persons = new BSPersons(this.BISManager, this.bisACEConnection);
+                    SG3Import import = new SG3Import(this.LogSG3Task, this.LogSG3Result, this.BISACESQL, this.BISSQL, this.BISManager, this.SG3Hosts);
+                    import.ImportManual(openFileDialog1.FileName);
+                }
+                this.Cursor = Cursors.Default;
+
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.LogSG3Task.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+            }
+        }
+
+        private void button24_Click(object sender, EventArgs e)
+        {
+            BSPersons persons = null;
+            try
+            {
+                this.LogSG3Task = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\ImportSG3TaskLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.LogSG3Result = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\ImportSG3ResultLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    this.Cursor = Cursors.WaitCursor;
+                    persons = new BSPersons(this.BISManager, this.bisACEConnection);
+                    SG3Import import = new SG3Import(this.LogSG3Task, this.LogSG3Result, this.BISACESQL, this.BISSQL, this.BISManager, this.SG3Hosts);
+                    //import.Recovery(openFileDialog1.FileName);
+                }
+                this.Cursor = Cursors.Default;
+
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.LogSG3Task.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+
+            }
+        }
+
+        private void button25_Click(object sender, EventArgs e)
+        {
+            BSPersons persons = null;
+            try
+            {
+                this.LogSG3Task = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\ImportSG3TaskLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.LogSG3Result = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\ImportSG3ResultLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    this.Cursor = Cursors.WaitCursor;
+                    persons = new BSPersons(this.BISManager, this.bisACEConnection);
+                    SG3Import import = new SG3Import(this.LogSG3Task, this.LogSG3Result, this.BISACESQL, this.BISSQL, this.BISManager, this.SG3Hosts);
+                    import.RecoveryException(openFileDialog1.FileName);
+                }
+                this.Cursor = Cursors.Default;
+
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.LogSG3Task.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+
+            }
+        }
+
+        private void button26_Click(object sender, EventArgs e)
+        {
+            StreamReader reader = null;
+            string line = null;
+            try
+            {
+                if (txtNdias.isBlank())
+                    throw new Exception("Digiar a quantidade de dias!");
+
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\RemoveNoAcess.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.ReadParameters();
+                this.bisACEConnection = new HzConexao(this.BISACESQL.SQLHost, this.BISACESQL.SQLUser, this.BISACESQL.SQLPwd, "acedb", "System.Data.SqlClient");
+
+                this.Cursor = Cursors.WaitCursor;
+
+                string sql = String.Format("set dateformat 'dmy' select per.persid, persno, Nome = ISNULL(firstname, '') + ' ' + ISNULL(lastname, ''), UltimoAceso = convert(varchar, accesstime, 103) + ' ' + convert(varchar, accesstime, 108)  from bsuser.CURRENTACCESSSTATE access " +
+                    "inner join bsuser.persons per on access.persid = per.persid left outer join bsuser.lockouts lock on lock.persid = per.persid " +
+                    "where persclass = 'E' and datediff(day, accesstime, getdate()) > {0} and per.status = 1 and lockid is null", txtNdias.Text);
+
+                this.LogTask.Information("Conectando com o BIS.");
+                if (!this.BISManager.Connect())
+                    throw new Exception("Erro ao conectar com o BIS.");
+
+                this.LogTask.Information("BIS conectado com sucesso!");
+
+                using (DataTable table = this.bisACEConnection.loadDataTable(sql))
+                {
+                    if (table == null || table.Rows.Count < 1)
+                        throw new Exception("Não há registros encontrados!");
+                    int current = 1;
+                    foreach(DataRow row in table.Rows)
+                    {
+                        BSPersons persons = new BSPersons(this.BISManager, this.bisACEConnection);
+                        this.LogTask.Information(String.Format("Registro {0} de {1}", (current++), table.Rows.Count.ToString()));
+                        this.LogTask.Information(String.Format("Carregando o colaborador: Persno: {0}, Nome: {1}", row["persno"].ToString(), row["nome"].ToString()));
+                        if (persons.Load(row["persno"].ToString(), BS_STATUS.ACTIVE))
+                        {
+                            this.LogTask.Information("Colaborador carregado com sucesso.");
+                            this.LogTask.Information("Excluindo o colaborador.");
+                            if (persons.DeletePerson(row["persid"].ToString()) == BS_ADD.SUCCESS)
+                                this.LogTask.Information("Colaborador excluido com sucesso!");
+                            else
+                                this.LogTask.Information("Erro ao excluir o colaborador.");
+                        }
+                        else
+                            this.LogTask.Information("Erro ao carregar o colaborador.");
+                    }
+                }
+
+                this.Cursor = Cursors.Default;
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                MessageBox.Show(ex.Message);
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+            }
+        }
+
+        private void button27_Click(object sender, EventArgs e)
+        {
+            BSPersons persons = null;
+            try
+            {
+                this.LogSG3Task = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\ImportSG3TaskLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.LogSG3Result = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Tools\\Import\\SG3\\ImportSG3ResultLogSolo.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    this.Cursor = Cursors.WaitCursor;
+                    persons = new BSPersons(this.BISManager, this.bisACEConnection);
+                    SG3Import import = new SG3Import(this.LogSG3Task, this.LogSG3Result, this.BISACESQL, this.BISSQL, this.BISManager, this.SG3Hosts);
+                    import.RecoveryManual(openFileDialog1.FileName);
+                }
+                this.Cursor = Cursors.Default;
+
+            }
+            catch (Exception ex)
+            {
+                this.Cursor = Cursors.Default;
+                this.LogSG3Task.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.Cursor = Cursors.Default;
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.BISManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+
             }
         }
     }

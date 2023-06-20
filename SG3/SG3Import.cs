@@ -16,6 +16,10 @@ using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+using System.Xml.Linq;
+using Microsoft.Identity.Client;
+using System.CodeDom;
 
 namespace FemsaTools.SG3
 {
@@ -25,6 +29,13 @@ namespace FemsaTools.SG3
         public string Nome { get; set; }
         public string Cardno { get; set; }
         public SG3Import.RE_STATUS Status { get; set; }
+    }
+
+    public class SG3Recovery
+    {
+        public string Persid { get; set; }
+        public string Nome { get; set; }
+        public string CPF { get; set; }
     }
 
     public class SG3Import
@@ -222,6 +233,345 @@ namespace FemsaTools.SG3
             }
         }
 
+        public void RecoveryManual(string filename)
+        {
+            BSPersons persons = null;
+            List<SG3Info> sg3Info = new List<SG3Info>();
+            StreamReader reader = null;
+            try
+            {
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\RecoverySG3.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                persons = new BSPersons(this.bisManager, this.bisConnection);
+                string line = null;
+                int currentline = 1;
+                int totallines = 0;
+                reader = new StreamReader(filename);
+                while ((reader.ReadLine() != null))
+                    totallines++;
+                reader.Close();
+                reader = new StreamReader(filename);
+                string sql = null;
+                while ((line = reader.ReadLine()) != null) 
+                {
+                    string[] people = line.Split(';');
+                    string empresa = people[2];
+                    string name = people[3];
+                    string cpf = people[5];
+                    string companyid = null;
+                    string cnpj = null;
+                    string persid = null;
+
+                    this.LogTask.Information(String.Format("{0} de {1}, Persno: {2}, Nome: {3}", (currentline++).ToString(), totallines.ToString(), cpf, name));
+                    
+                    try
+                    {
+                        this.LogTask.Information(String.Format("Pesquisando a empresa: {0}", empresa));
+                        sql = String.Format("select companyid, remarks from bsuser.companies where name = '{0}' or companyno = '{0}'", empresa);
+                        using (DataTable tblCmp = this.bisConnection.loadDataTable(sql))
+                        {
+                            if (tblCmp != null && tblCmp.Rows.Count > 0)
+                            {
+                                companyid = tblCmp.Rows[0]["companyid"].ToString();
+                                cnpj = tblCmp.Rows[0]["remarks"].ToString();
+                                this.LogTask.Information(String.Format("Empresa encontrada. ID: {0}, CNPJ: {1}", companyid, cnpj));
+                            }
+                            else
+                                this.LogTask.Information("Empresa nao encontrada!");
+                        }
+
+                        this.LogTask.Information("Pesquisando no BIS.");
+                        sql = String.Format("select persid from bsuser.persons where persno = '{0}'", cpf);
+                        using (DataTable table = this.bisConnection.loadDataTable(sql))
+                        {
+                            if (table != null && table.Rows.Count > 0)
+                            {
+                                persid = table.Rows[0]["persid"].ToString();
+                                this.LogTask.Information(String.Format("Pessoa encontrada. Persid: {0}", persid));
+                                if (!String.IsNullOrEmpty(companyid))
+                                    sql = String.Format("update bsuser.persons set companyid = '{0}', grade = 'SG3', persclassid = '0013B4437A2455E1' where persid = '{1}'", companyid, table.Rows[0]["persid"].ToString());
+                                else
+                                    sql = String.Format("update bsuser.persons set grade = 'SG3', persclassid = '0013B4437A2455E1' where persid = '{0}'", persid);
+                                this.LogTask.Information("Atualizando a pessoa.");
+                                this.bisConnection.executeProcedure(sql);
+                            }
+                        }
+
+                        if (!String.IsNullOrEmpty(persid))
+                        {
+                            this.LogTask.Information("Verificando a existencia de cartao ativo.");
+                            sql = String.Format("set dateformat 'dmy' select cardid, status from bsuser.cards where persid = '{0}' and datedeleted >= '06/06/2023'", persid);
+                            DataTable table = this.bisConnection.loadDataTable(sql);
+                            if (table == null || table.Rows.Count < 1)
+                            {
+                                this.LogTask.Information("Nao ha cartao ativo.");
+                                //continue;
+                            }
+                            sql = String.Format("set dateformat 'dmy' update bsuser.persons set status = 1, datedeleted = null where persid = '{0}'", persid);
+                            this.LogTask.Information("Atualizando a tabela Persons.");
+                            if (this.bisConnection.executeProcedure(sql))
+                                this.LogTask.Information("Tabela atualizada com sucesso.");
+                            else
+                                this.LogTask.Information("Erro ao atualizar a tabela.");
+
+                            sql = String.Format("set dateformat 'dmy' update bsuser.acpersons set status = 1, datedeleted = null where persid = '{0}' and datedeleted >= '06/06/2023'", persid);
+                            this.LogTask.Information("Atualizando a tabela ACPersons.");
+                            if (this.bisConnection.executeProcedure(sql))
+                                this.LogTask.Information("Tabela atualizada com sucesso.");
+                            else
+                                this.LogTask.Information("Erro ao atualizar a tabela.");
+
+                            sql = String.Format("set dateformat 'dmy' update bsuser.cards set status = 1, datedeleted = null where persid = '{0}' and datedeleted >= '06/06/2023'", persid);
+                            this.LogTask.Information("Atualizando a tabela Cards.");
+                            if (this.bisConnection.executeProcedure(sql))
+                                this.LogTask.Information("Tabela atualizada com sucesso.");
+                            else
+                                this.LogTask.Information("Erro ao atualizar a tabela.");
+
+                            this.LogTask.Information("Carregando a pessoa.");
+                            if (persons.Load(persid))
+                            {
+                                this.LogTask.Information("Pessoa carregada com sucesso.");
+                                this.LogTask.Information("Atualizando no BIS.");
+                                if (persons.Update() == API_RETURN_CODES_CS.API_SUCCESS_CS)
+                                    this.LogTask.Information("Pessoa atualizada com sucesso.");
+                                else
+                                    this.LogTask.Information("Erro ao atualizar a pessoa.");
+
+                                this.LogTask.Information("Desbloqueando a pessoa.");
+                                if (persons.RemoveAllBLocks(this.bisConnection, persid) == BS_ADD.SUCCESS)
+                                    this.LogTask.Information("Pessoa Desbloqueada com sucesso.");
+                                //this.LogTask.Information("Bloqueando a pessoa.");
+                                //if (persons.AddBlock(DateTime.Now, DateTime.Now.AddYears(20), "Documentacao invalida") == BS_ADD.SUCCESS)
+                                //    this.LogTask.Information("Pessoa bloqueada com sucesso.");
+                                //else
+                                //    this.LogTask.Information("Erro ao bloquear a pessoa.");
+                            }
+                        }
+                        else if (String.IsNullOrEmpty(persid))
+                        {
+                            this.LogTask.Information("Pessoa nao encontrada. Importando.");
+                            Liberacao l = new Liberacao();
+                            l.colaborador = name;
+                            l.cpf = cpf;
+                            l.empresa_terceira = empresa;
+                            l.cnpj = cnpj;
+                            SG3Info info = this.Import(l);
+                            if (info.Status == RE_STATUS.SUCCESS)
+                                this.LogTask.Information("Pessoa importada com sucesso.");
+                            else
+                                this.LogTask.Information("Erro ao importar a pessoa.");
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        this.LogTask.Information("Erro: {0} / sql: {1}", ex.Message, sql);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.bisManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+            }
+        }
+
+        public void RecoveryException(string filename)
+        {
+            BSPersons persons = null;
+            List<SG3Info> sg3Info = new List<SG3Info>();
+            StreamReader reader = null;
+            try
+            {
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\RecoveryExceptionSG3.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                persons = new BSPersons(this.bisManager, this.bisConnection);
+                string line = null;
+                int currentline = 1;
+                int totallines = 0;
+                reader = new StreamReader(filename);
+                while ((reader.ReadLine() != null))
+                    totallines++;
+                reader.Close();
+                reader = new StreamReader(filename);
+                string sql = null;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    string[] people = line.Split(';');
+                    string persid = people[0];
+                    string name = people[1];
+                    string cpf = people[2];
+
+                    this.LogTask.Information(String.Format("{0} de {1}, Persid: {2}, CPF: {3}, Nome: {4}", (currentline++).ToString(), totallines.ToString(), persid, cpf, name));
+
+                    try
+                    {
+                        this.LogTask.Information("Verificando a existencia de cartao ativo.");
+                        sql = String.Format("set dateformat 'dmy' select cardid, status from bsuser.cards where persid = '{0}' and datedeleted >= '06/06/2023'", persid);
+                        DataTable table = this.bisConnection.loadDataTable(sql);
+                        if (table == null || table.Rows.Count < 1)
+                        {
+                            this.LogTask.Information("Nao ha cartao ativo.");
+                            continue;
+                        }
+                        sql = String.Format("set dateformat 'dmy' update bsuser.persons set status = 1, datedeleted = null where persid = '{0}'", persid);
+                        this.LogTask.Information("Atualizando a tabela Persons.");
+                        if (this.bisConnection.executeProcedure(sql))
+                            this.LogTask.Information("Tabela atualizada com sucesso.");
+                        else
+                            this.LogTask.Information("Erro ao atualizar a tabela.");
+
+                        sql = String.Format("set dateformat 'dmy' update bsuser.cards set status = 1, datedeleted = null where persid = '{0}' and datedeleted >= '06/06/2023'", persid);
+                        this.LogTask.Information("Atualizando a tabela Cards.");
+                        if (this.bisConnection.executeProcedure(sql))
+                            this.LogTask.Information("Tabela atualizada com sucesso.");
+                        else
+                            this.LogTask.Information("Erro ao atualizar a tabela.");
+
+                        sql = String.Format("set dateformat 'dmy' update bsuser.acpersons set status = 1, datedeleted = null where persid = '{0}' and datedeleted >= '06/06/2023'", persid);
+                        this.LogTask.Information("Atualizando a tabela ACPersons.");
+                        if (this.bisConnection.executeProcedure(sql))
+                            this.LogTask.Information("Tabela atualizada com sucesso.");
+                        else
+                            this.LogTask.Information("Erro ao atualizar a tabela.");
+
+                        this.LogTask.Information("Carregando a pessoa.");
+                        if (persons.Load(persid))
+                        {
+                            this.LogTask.Information("Pessoa carregada com sucesso.");
+                            this.LogTask.Information("Atualizando no BIS.");
+                            if (persons.Update() == API_RETURN_CODES_CS.API_SUCCESS_CS)
+                                this.LogTask.Information("Pessoa atualizada com sucesso.");
+                            else
+                                this.LogTask.Information("Erro ao atualizar a pessoa.");
+
+                            this.LogTask.Information("Bloqueando a pessoa.");
+                            if (persons.AddBlock(DateTime.Now, DateTime.Now.AddYears(20), "Documentacao invalida") == BS_ADD.SUCCESS)
+                                this.LogTask.Information("Pessoa bloqueada com sucesso.");
+                            else
+                                this.LogTask.Information("Erro ao bloquear a pessoa.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        this.LogTask.Information("Erro: {0} / sql: {1}", ex.Message, sql);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.bisManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+            }
+        }
+        public void ImportManual(string filename)
+        {
+            BSPersons persons = null;
+            List<SG3Info> sg3Info = new List<SG3Info>();
+            try
+            {
+                this.LogTask = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\ImportSG3TaskLog.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                this.LogResult = new LoggerConfiguration()
+                    .WriteTo.File("c:\\Horizon\\Log\\Femsa\\Import\\SG3\\ImportSG3ResultLog.log", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true, fileSizeLimitBytes: 10000000, retainedFileCountLimit: 7)
+                    .CreateLogger();
+
+                persons = new BSPersons(this.bisManager, this.bisConnection);
+                string jsonString;
+                using (StreamReader reader = new StreamReader(filename))
+                {
+                    jsonString = reader.ReadToEnd();
+                }
+
+                // Deserialize the JSON data into an object
+                List<Liberacao> liberacao = JsonConvert.DeserializeObject<List<Liberacao>>(jsonString);
+                int total = liberacao.Count;
+                int count = 0;
+                foreach (Liberacao l in liberacao)
+                {
+                    this.LogTask.Information(String.Format("{0} de {1}, RG: {2}, CPF: {3}, Nome: {4}", (count++).ToString(), liberacao.Count.ToString(), l.rg, l.cpf, l.colaborador.Replace("'", "")));
+
+                    if (l.tipo_terceiro == null)
+                        continue;
+
+                    if (l.tipo_terceiro.ToLower().Equals("aprendiz") || l.tipo_terceiro.ToLower().Equals("fixo") || l.tipo_terceiro.ToLower().Equals("volante") ||
+                    l.tipo_terceiro.ToLower().Equals("outros contratos fixo") || l.tipo_terceiro.ToLower().Equals("socio fixo") || l.tipo_terceiro.ToLower().Equals("cooperfemsa") ||
+                    l.tipo_terceiro.ToLower().Equals("estagiario") || l.tipo_terceiro.ToLower().Equals("outros contratos aprendiz") || l.tipo_terceiro.ToLower().Equals("residente") ||
+                    l.tipo_terceiro.ToLower().Equals("outros contratos") || l.tipo_terceiro.ToLower().Equals("temporario 6019") ||
+                    l.tipo_terceiro.ToLower().Equals("socio residente"))
+                    {
+                        //if (filename.ToLower().Equals("femsabrasil.txt") && l.liberado.Equals("S"))
+                        if (filename.ToLower().IndexOf("femsabrasil") > 0)
+                        {
+                            this.LogTask.Information("Importando....");
+                            sg3Info.Add(this.Import(l));
+                        }
+
+                        //if (filename.ToLower().Equals("femsa") || filename.ToLower().Equals("filename.ToLower().IndexOf("femsa")"))
+                        if (filename.ToLower().IndexOf("femsa") > 0 || filename.ToLower().IndexOf("femsat1") > 0)
+                        {
+                            if (String.IsNullOrEmpty(l.cpf))
+                            {
+                                this.LogTask.Information("CPF em branco.");
+                                continue;
+                            }
+                            if (l.tipo_terceiro.ToLower().Equals("residente") || l.tipo_terceiro.ToLower().Equals("socio residente"))
+                            {
+                                this.LogTask.Information("Importando....");
+                                sg3Info.Add(this.Import(l));
+                            }
+                            else
+                            {
+                                this.LogTask.Information("Excluindo....");
+                                sg3Info.Add(this.Delete(l));
+                            }
+                        }
+                    }
+                }
+                this.sendFinish(this.bisConnection, sg3Info, total);
+            }
+            catch (Exception ex)
+            {
+                this.LogTask.Information(String.Format("Erro: {0}", ex.Message));
+            }
+            finally
+            {
+                this.LogTask.Information("Descontecando o BIS.");
+                if (this.bisManager.Disconnect())
+                    this.LogTask.Information("BIS desconectado com sucesso.");
+                else
+                    this.LogTask.Information("Erro ao desconectar com o BIS.");
+
+                this.LogTask.Information("Rotina finalizada..");
+            }
+        }
         public async void Import()
         {
             BSPersons persons = null;
@@ -284,6 +634,23 @@ namespace FemsaTools.SG3
                         this.LogTask.Information(String.Format("{0} registros encontrados.", liberacao.Count.ToString()));
                         int count = 1;
                         total += liberacao.Count;
+
+                        string jsonString = JsonConvert.SerializeObject(liberacao);
+
+                        int pos = host.Username.IndexOf(".");
+                        string filename = host.Username.Substring(pos + 1, (host.Username.Length - (pos + 1)));
+
+                        // Specify the file path
+                        string filePath = String.Format(@"c:\temp\sg3\{0}.txt", filename);
+
+                        // Write the JSON string to the file
+                        using (StreamWriter writer = new StreamWriter(filePath))
+                        {
+                            writer.Write(jsonString);
+                        }
+
+                        continue;
+
                         foreach (Liberacao l in liberacao)
                         {
                             this.LogTask.Information(String.Format("{0} de {1}, RG: {2}, CPF: {3}, Nome: {4}", (count++).ToString(), liberacao.Count.ToString(), l.rg, l.cpf, l.colaborador.Replace("'", "")));
